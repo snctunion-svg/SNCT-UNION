@@ -3762,7 +3762,7 @@ function updateNavForRole(){
 }
 // 보기 전용일 때 화면의 편집 요소를 잠그고 숨김 (실제 차단은 보안 규칙 + requireEdit이 담당)
 function applyReadonly(el){
-  const allow = new Set(['payPwInput','codeStatsStartInput','codeStatsEndInput','codeStatsMealChk','otRangeStartInput','otRangeEndInput','dpDate','dpShift','vslReload','vslToggle','fDate','fEmp1','fEmp2']);
+  const allow = new Set(['uwSearch','uwToc','uwGrpSel','payPwInput','codeStatsStartInput','codeStatsEndInput','codeStatsMealChk','otRangeStartInput','otRangeEndInput','dpDate','dpShift','vslReload','vslToggle','fDate','fEmp1','fEmp2']);
   el.querySelectorAll('input,select,textarea').forEach(x=>{ if(!allow.has(x.id) && x.type!=='file' && !(x.dataset && x.dataset.mgRank)) x.disabled = true; });   // 월별 근태 순번 종류 선택은 보기만 하는 사람도 쓸 수 있음(저장하지 않음)
   el.querySelectorAll('#holForm,#teamAddForm,#showAddCodeBtn,#splanResetBtn,#backupImportBtn,#delRecBtn,#attForm button[type="submit"],[data-act="del-emp"],[data-act="del-hol"],[data-act="delete-code"],[data-act="restore-code"],[data-act="save-code"],.dpCatBtn,.editor-only')
     .forEach(x=> x.style.display = 'none');
@@ -3876,6 +3876,7 @@ async function initDb(){
   fb.authM.onAuthStateChanged(fb.auth, user=>{
     currentUser = user;
     userRole = user ? roleOfEmail(user.email) : null;
+    if(SITE_UNION){ uwPriv = {}; uwPrivErr = {}; }   // 로그인·로그아웃하면 규정을 다시 읽음
     const lt = user && userRole==='leader' ? (LEADER_TEAM_EMAILS[String(user.email||'').toLowerCase()] || null) : null;
     if(lt && lt !== leaderTeam){   // 조별 조장으로 들어오면 화면들을 자기 조로 맞춤
       inputTeam = lt; dispatchTeamFilter = lt; combinedTeamFilter = lt; otTeamFilter = lt;
@@ -4511,7 +4512,7 @@ function pageUnionGate(){
   const wrong = authResolved && currentUser;   // 로그인은 했는데 UNION 계정이 아님
   return `<div class="unGate"><div class="unGateCard">
     <div class="unGateLogo">🛡</div><h2>SNCT 노동조합</h2>
-    <p>선광신컨테이너터미널㈜ 노동조합<br>조합원 명부 · 양식 · 규약&amp;규정 · 취업&amp;업무</p>
+    <p>선광신컨테이너터미널㈜ 노동조합<br>조합원 명부 · 양식은 UNION 전용이에요.</p>
     ${!authResolved && !demoMode ? '<p class="hint">로그인 확인 중…</p>'
       : wrong ? `<p style="color:var(--warn);font-weight:700;">UNION 계정이 아니에요.</p><button type="button" class="btn ghost" id="unGateOut">로그아웃</button>`
       : `<button type="button" class="btn unGateBtn" id="unGateLogin">🔐 UNION 로그인</button><p class="hint">UNION 비밀번호로 로그인해야 볼 수 있어요.</p>`}
@@ -4610,6 +4611,7 @@ function uwGroupBar(v){
   return `<div class="row uwGrpBar"><span style="font-weight:800;">${g==='uwregs' ? '규정 선택' : g==='unana' ? '분석 선택' : '서류 선택'}</span><select id="uwGrpSel" class="docSel">${UW_GROUPS[g].map(([id,l])=> `<option value="${id}"${id===v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>`;
 }
 function bindUwGroupSel(){ const gs = document.getElementById('uwGrpSel'); if(gs) gs.onchange = ()=>{ const g = uwGroupOf(gs.value); if(g){ uwGrpLast[g] = gs.value; try{ localStorage.setItem('snct_uw_grp', JSON.stringify(uwGrpLast)); }catch(e){} } setView(gs.value); }; }
+function isUnionPublicView(v){ return v==='uwcal' || uwGroupOf(v)==='uwregs' || uwGroupOf(v)==='uwjobs'; }   // SNCT 노동조합 사이트에서 로그인 없이 보는 화면
 function isWorkSheet(v){ return WORK_SHEETS.some(x=> x[0]===v) || (!!uwGroupOf(v) && uwGroupOf(v)!=='unana'); }
 function isUnionSheet(v){ return UNION_SHEETS.some(x=> x[0]===v) || uwGroupOf(v)==='unana'; }
 function isLeaderSheet(v){ return LEADER_SHEETS.some(x=> x[0]===v); }
@@ -4635,7 +4637,7 @@ function pageHub(list){
   return `<div class="unionHub"><p class="hint" style="margin:0 0 10px;">볼 시트를 골라 주세요.</p>
     <div class="unionGrid">${list.filter(([v])=> roleCanSee(v)).map(([v,ic,l])=> `<button type="button" class="unionCard" data-union-go="${v}"><span class="unionIc">${ic}</span><b>${esc(l)}</b></button>`).join('')}</div></div>`;
 }
-// ===== UNION > 캘린더: 월별 일정 보기·입력. 클라우드 unionPrivate/cal_YYYY-MM 에 달마다 저장(UNION만) =====
+// ===== 캘린더: 월별 일정. 누구나 보고(배포용), UNION만 입력·수정. 클라우드 meta/cal_YYYY-MM 에 달마다 저장 =====
 const CAL_CATS = [['gen','일반'],['meet','회의'],['nego','교섭'],['event','행사'],['edu','교육'],['etc','기타']];
 let calYm = (()=>{ const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();
 let calSel = todayStr();            // 고른 날짜
@@ -4646,23 +4648,28 @@ let calErr = '';
 function calKey(y, m){ return `${y}-${pad2(m)}`; }
 function calParse(doc){ try{ const a = JSON.parse((doc && doc.json) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
 function subscribeCal(){
-  if(!db || !(userRole==='union' || userRole==='all')) return;
+  if(!db) return;
   const k = calKey(calYm.y, calYm.m);
   if(calKeySub===k && unsub.cal) return;
   if(unsub.cal){ try{ unsub.cal(); }catch(e){} unsub.cal = null; }
   calKeySub = k;
-  try{ unsub.cal = db.collection('unionPrivate').doc('cal_' + k).onSnapshot(doc=>{ calData[k] = doc.exists ? calParse(doc.data()) : []; calErr = ''; if(VIEW==='uwcal' && !calEdit) scheduleRender(); },
-    ()=>{ calErr = '캘린더를 읽을 권한이 없어요(UNION 로그인 필요).'; if(VIEW==='uwcal') scheduleRender(); }); }catch(e){}
+  try{ unsub.cal = db.doc('meta/cal_' + k).onSnapshot(doc=>{ calData[k] = doc.exists ? calParse(doc.data()) : []; calErr = ''; if(!doc.exists) calMigrate(k); if(VIEW==='uwcal' && !calEdit) scheduleRender(); },
+    ()=>{ calErr = '캘린더를 읽지 못했어요. 잠시 뒤 다시 열어 주세요.'; if(VIEW==='uwcal') scheduleRender(); }); }catch(e){}
+}
+const calMigrated = {};
+async function calMigrate(k){   // 예전(UNION 전용 unionPrivate)에 넣은 일정을 공개 캘린더로 한 번 옮김 — UNION 로그인 때만
+  if(calMigrated[k] || !(userRole==='union' || userRole==='all') || demoMode) return; calMigrated[k] = true;
+  try{ const d = await db.collection('unionPrivate').doc('cal_' + k).get(); if(d.exists){ const list = calParse(d.data()); if(list.length) await calSaveMonth(k, list); } }catch(e){}
 }
 async function calLoadMonth(k){
   if(calData[k]) return calData[k];
-  try{ const d = await db.collection('unionPrivate').doc('cal_' + k).get(); calData[k] = d.exists ? calParse(d.data()) : []; }catch(e){ calData[k] = []; }
+  try{ const d = await db.doc('meta/cal_' + k).get(); calData[k] = d.exists ? calParse(d.data()) : []; }catch(e){ calData[k] = []; }
   return calData[k];
 }
 async function calSaveMonth(k, list){
   list.sort((a,b)=> (a.d + (a.t||'')).localeCompare(b.d + (b.t||'')));
   calData[k] = list;
-  await db.collection('unionPrivate').doc('cal_' + k).set({json: JSON.stringify(list), at: Date.now()});
+  await db.doc('meta/cal_' + k).set({json: JSON.stringify(list), at: Date.now()});
 }
 function calCatName(c){ const f = CAL_CATS.find(x=> x[0]===c); return f ? f[1] : '일반'; }
 function calDayEvents(ds){ return (calData[ds.slice(0,7)] || []).filter(e=> e.d===ds); }
@@ -4695,7 +4702,7 @@ function pageUwCal(){
   const byDate = {}; list.forEach(e=> (byDate[e.d] = byDate[e.d] || []).push(e));
   const monthList = Object.keys(byDate).sort().map(ds=> `<div class="calMonthDate">${esc(calDateLabel(ds))}${holidays[ds] ? ' · ' + esc(holidays[ds]) : ''}</div><div class="calList">${byDate[ds].map(calItemHtml).join('')}</div>`).join('');
   const pop = calEdit ? `<div class="sheetPopScrim" id="calScrim"><div class="sheetPop calPop" role="dialog" aria-label="일정 ${calEdit.id ? '수정' : '추가'}">
-      <div class="sheetPopHd"><b>${calEdit.id ? '일정 수정' : '일정 추가'}</b><button type="button" class="sheetPopX" id="calClose" aria-label="닫기">✕</button></div>
+      <div class="sheetPopHd"><b>${!canEdit ? '일정 보기' : calEdit.id ? '일정 수정' : '일정 추가'}</b><button type="button" class="sheetPopX" id="calClose" aria-label="닫기">✕</button></div>
       <div class="calForm">
         <label><span>날짜</span><input type="date" id="calFD" value="${esc(calEdit.d)}"></label>
         <label><span>시간 (선택)</span><input type="time" id="calFT" value="${esc(calEdit.t||'')}"></label>
@@ -4703,29 +4710,29 @@ function pageUwCal(){
         <label class="full"><span>분류</span><span class="calColors">${CAL_CATS.map(([c,l])=> `<button type="button" class="calC-${c}${(calEdit.c||'gen')===c ? ' on' : ''}" data-cal-c="${c}">${l}</button>`).join('')}</span></label>
         <label class="full"><span>메모 (장소·참석자 등)</span><textarea id="calFMemo" maxlength="1000">${esc(calEdit.memo||'')}</textarea></label>
       </div>
-      <div class="calPopBtns">${calEdit.id ? '<button type="button" class="btn ghost sm" id="calDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="calCancel">취소</button><button type="button" class="btn" id="calSave">💾 저장</button></div>
+      <div class="calPopBtns">${calEdit.id ? '<button type="button" class="btn ghost sm editor-only" id="calDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="calCancel">${canEdit ? '취소' : '닫기'}</button><button type="button" class="btn editor-only" id="calSave">💾 저장</button></div>
     </div></div>` : '';
   return `
   <h2 class="pgttl">캘린더</h2>
-  <div class="uwHead"><b>캘린더</b><span>선광신컨테이너터미널㈜ 노동조합 · 월별 일정</span></div>
+  <div class="uwHead"><b>캘린더</b><span>선광신컨테이너터미널㈜ 노동조합 · 월별 일정${canEdit ? '' : ' · 보기 전용'}</span></div>
   ${calErr ? `<div class="note">${esc(calErr)}</div>` : ''}
   <div class="calTop">
     <div class="calNav"><button type="button" id="calPrev" aria-label="이전 달">‹</button><span class="calYm">${y}년 ${m}월</span><button type="button" id="calNext" aria-label="다음 달">›</button></div>
     <button type="button" class="btn ghost sm" id="calToday">오늘</button>
     <span class="spacer"></span>
-    <button type="button" class="btn sm" id="calAdd">＋ 일정 추가</button>
+    <button type="button" class="btn sm editor-only" id="calAdd">＋ 일정 추가</button>
   </div>
   <div class="calLegend">${CAL_CATS.map(([c,l])=> `<span><i class="calD-${c}"></i>${l}</span>`).join('')}</div>
   <div class="calGrid">${'일월화수목금토'.split('').map((w,i)=> `<div class="calDow${i===0 ? ' sun' : i===6 ? ' sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
   <div class="calDay">
-    <div class="calDayHd"><b>${esc(calDateLabel(calSel))}</b>${holidays[calSel] ? `<span class="calHolTag">${esc(holidays[calSel])}</span>` : ''}<span class="spacer"></span><button type="button" class="btn ghost sm" id="calAddDay">＋ 이 날 일정</button></div>
-    <div class="calList">${selEv.length ? selEv.map(calItemHtml).join('') : '<div class="calEmpty">이 날은 일정이 없어요. [＋ 이 날 일정]을 눌러 넣어 보세요.</div>'}</div>
+    <div class="calDayHd"><b>${esc(calDateLabel(calSel))}</b>${holidays[calSel] ? `<span class="calHolTag">${esc(holidays[calSel])}</span>` : ''}<span class="spacer"></span><button type="button" class="btn ghost sm editor-only" id="calAddDay">＋ 이 날 일정</button></div>
+    <div class="calList">${selEv.length ? selEv.map(calItemHtml).join('') : `<div class="calEmpty">이 날은 일정이 없어요.${canEdit ? ' [＋ 이 날 일정]을 눌러 넣어 보세요.' : ''}</div>`}</div>
   </div>
   <div class="calMonthHd">${m}월 전체 일정 ${list.length}건</div>
   ${monthList || '<div class="calEmpty">이번 달 일정이 없어요.</div>'}
   ${pop}`;
 }
-function calOpen(ev){ calEdit = ev ? Object.assign({}, ev) : {d: calSel, t:'', title:'', memo:'', c:'gen'}; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
+function calOpen(ev){ if(!ev && !canEdit) return; calEdit = ev ? Object.assign({}, ev) : {d: calSel, t:'', title:'', memo:'', c:'gen'}; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
 function calClose(){ calEdit = null; render(); }
 function calGo(dm){ let {y, m} = calYm; m += dm; if(m < 1){ m = 12; y--; } if(m > 12){ m = 1; y++; } calYm = {y, m}; calSel = ''; render(); }
 function bindUwCal(){
@@ -4767,7 +4774,7 @@ function bindUwCal(){
 function render(){
   renderDeferred = false;
   const el = document.getElementById('content');
-  if(SITE_UNION && !(userRole==='union' || userRole==='all')){ el.innerHTML = pageUnionGate(); bindUnionGate(); return; }   // SNCT UNION: UNION 로그인 전에는 아무것도 안 보임
+  if(SITE_UNION && !(userRole==='union' || userRole==='all') && !isUnionPublicView(VIEW)){ el.innerHTML = pageUnionGate(); bindUnionGate(); return; }   // 캘린더·규약&규정·취업&업무는 누구나(보기만), 조합원 명부·양식은 UNION 비번   // SNCT UNION: UNION 로그인 전에는 아무것도 안 보임
   ensureForView();
   if(authResolved){ canEdit = roleCanEdit(VIEW); if(leaderBlocksView()) canEdit = false; }   // 조별 조장: 다른 조는 보기만
   if(VIEW==='input' || VIEW==='input2') el.innerHTML = pageInput();
@@ -4802,7 +4809,7 @@ function render(){
   else if(VIEW==='unionhub') el.innerHTML = pageHub(UNION_SHEETS);
   else if(VIEW==='leaderhub') el.innerHTML = pageHub(LEADER_SHEETS);
   const hubList = isUnionSheet(VIEW) ? UNION_SHEETS : isLeaderSheet(VIEW) ? LEADER_SHEETS : isWorkSheet(VIEW) ? WORK_SHEETS : null;
-  if(hubList){ el.insertAdjacentHTML('afterbegin', sheetBar(hubList, hubList===UNION_SHEETS ? 'UNION WORK' : hubList===WORK_SHEETS ? 'UNION' : '조장관리'));   // 시트 고르기 줄(맨 위) — 휴대폰에서 고른 시트가 보이게 옆으로 맞춤
+  if(hubList && !(SITE_UNION && hubList===WORK_SHEETS)){ el.insertAdjacentHTML('afterbegin', sheetBar(hubList, hubList===UNION_SHEETS ? 'UNION WORK' : hubList===WORK_SHEETS ? 'UNION' : '조장관리'));   // 시트 고르기 줄(맨 위) — 휴대폰에서 고른 시트가 보이게 옆으로 맞춤
     const bar = el.querySelector('.unionBar'), on = bar && bar.querySelector('.unionChip.on'); if(on) bar.scrollLeft = Math.max(0, on.offsetLeft - (bar.clientWidth - on.offsetWidth)/2); }
   if(hubList || VIEW==='unionhub' || VIEW==='leaderhub') el.querySelectorAll('[data-union-go]').forEach(b=> b.onclick = ()=> setView(b.dataset.unionGo));
 
@@ -9445,7 +9452,7 @@ const UW_DOCS = {"uwrule":{"title":"규약","sub":"선광신컨테이너터미�
 let uwQuery = {};
 let uwOverride = {};   // UNION이 고친 규정(meta/uwDocs) — 있으면 원문 대신 이걸 보여 주고 출력
 let uwEdit = null;     // 지금 고치는 중인 규정 id
-// 업무규정·취업규칙: 회사 내부 규정이라 앱 파일(공개)에는 넣지 않고 클라우드 unionPrivate/rules_{id} 에만 저장(UNION만)
+// 업무규정·취업규칙: 앱 파일에는 넣지 않고 클라우드에 저장 — unionPrivate/rules_{id}(원본) + meta/rules_{id}(배포용 공개본, 누구나 보기)
 const UW_PRIV = {uwwork:{title:'업무규정'}, uwemp:{title:'취업규칙'}};
 let uwPriv = {}, uwPrivErr = {}, uwPrivLoading = {};
 function isUwView(v){ return !!(UW_DOCS[v] || UW_PRIV[v]); }
@@ -9455,14 +9462,23 @@ function uwStored(id){ return UW_PRIV[id] ? null : uwParseStored(uwOverride[id])
 async function uwLoadPriv(id){
   if(!db || uwPrivLoading[id] || Object.prototype.hasOwnProperty.call(uwPriv, id)) return;   // 한 번 읽었으면(없어도) 다시 안 읽음
   uwPrivLoading[id] = true;
-  try{ const doc = await db.collection('unionPrivate').doc('rules_' + id).get(); uwPriv[id] = doc.exists ? uwParseStored(doc.data()) : null; uwPrivErr[id] = doc.exists ? '' : 'none'; }
-  catch(err){ uwPrivErr[id] = '규정을 읽을 권한이 없어요(UNION 로그인 필요).'; }
+  try{
+    const pub = await db.doc('meta/rules_' + id).get();
+    if(pub.exists){ uwPriv[id] = uwParseStored(pub.data()); uwPrivErr[id] = ''; }
+    else if(userRole==='union' || userRole==='all'){
+      const doc = await db.collection('unionPrivate').doc('rules_' + id).get(); uwPriv[id] = doc.exists ? uwParseStored(doc.data()) : null; uwPrivErr[id] = doc.exists ? '' : 'none';
+      if(doc.exists && !demoMode){ try{ await db.doc('meta/rules_' + id).set(doc.data()); }catch(e){} }   // 배포용으로 공개본 만들기
+    } else { uwPriv[id] = null; uwPrivErr[id] = '아직 올라온 규정이 없어요.'; }
+  }
+  catch(err){ uwPrivErr[id] = '규정을 읽지 못했어요. 잠시 뒤 다시 열어 주세요.'; }
   uwPrivLoading[id] = false; if(VIEW===id) render();
 }
 async function uwSavePriv(id, d){
   uwPriv[id] = d;
   if(!db) return;
-  await db.collection('unionPrivate').doc('rules_' + id).set({json: JSON.stringify({title:d.title, sub:d.sub, b:d.b}), at: d.at || Date.now()});
+  const rec = {json: JSON.stringify({title:d.title, sub:d.sub, b:d.b}), at: d.at || Date.now()};
+  await db.collection('unionPrivate').doc('rules_' + id).set(rec);
+  await db.doc('meta/rules_' + id).set(rec);   // 배포용(누구나 보기) 공개본
 }
 // ===== PDF → 규정 블록 (브라우저·노드 공용) =====
 async function uwPdfLines(pdf){   // 페이지마다 글자 조각을 줄로 모아, 'pdftotext -layout'처럼 큰 틈은 여러 칸 띄움
