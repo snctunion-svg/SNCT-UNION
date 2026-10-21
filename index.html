@@ -1477,6 +1477,8 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
   .uwPPre{font-family:"D2Coding","Nanum Gothic Coding","Courier New",monospace;font-size:8pt;line-height:1.4;white-space:pre-wrap;margin:1mm 0 2mm;border:0;}
 }
 /* ===== UNION > 캘린더 ===== */
+.navLock{font-size:11px;margin-left:auto;opacity:.7;}
+body.isUnion .navLock{display:none;}
 .calTop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
 .calNav{display:flex;align-items:center;gap:4px;}
 .calNav button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;width:36px;height:36px;font-size:18px;line-height:1;cursor:pointer;}
@@ -3756,7 +3758,8 @@ function openLoginDialog(role){
 const EDITOR_ONLY_VIEWS = ['input2','team','holidays','codes','backup','grid','employees','codestats','pay'];
 function isEditorOnlyView(v){ return EDITOR_ONLY_VIEWS.includes(v); }
 function updateNavForRole(){
-  document.querySelectorAll('nav#nav a[data-view]').forEach(a=>{ a.style.display = roleCanSee(a.dataset.view) ? '' : 'none'; });
+  document.querySelectorAll('nav#nav a[data-view]').forEach(a=>{ a.style.display = (SITE_UNION || roleCanSee(a.dataset.view)) ? '' : 'none'; });   // SNCT 노동조합 사이트는 메뉴가 누구에게나 보임
+  document.body.classList.toggle('isUnion', userRole==='union' || userRole==='all');
   document.querySelectorAll('nav#nav [data-role-section="union"]').forEach(x=> x.style.display = (userRole==='union' || userRole==='all') ? '' : 'none');
   document.querySelectorAll('nav#nav [data-role-section="leader"]').forEach(x=> x.style.display = (userRole==='leader' || userRole==='union' || userRole==='all') ? '' : 'none');
 }
@@ -11544,7 +11547,7 @@ document.addEventListener('change', (e)=>{
 
 /* ========================= 내비게이션/모바일 ========================= */
 if(SITE_UNION){   // SNCT UNION: 메뉴는 조합원 명부·양식·규약&규정·취업&업무만
-  document.getElementById('nav').innerHTML = '<div class="navttl">SNCT 노동조합</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}" data-role-section="union"><span class="ic">${ic}</span>${l}</a>`).join('');
+  document.getElementById('nav').innerHTML = '<div class="navttl">SNCT 노동조합</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}"><span class="ic">${ic}</span>${l}${isUnionPublicView(id) || id==='uwregs' || id==='uwjobs' ? '' : '<span class="navLock" title="UNION 전용"> 🔒</span>'}</a>`).join('');   // 누구나 메뉴가 보임 — 🔒 메뉴는 누르면 UNION 로그인
   const h1 = document.querySelector('header.app h1'); if(h1) h1.textContent = 'SNCT 노동조합';
 } else { const us = document.getElementById('navUnionSite'); if(us) us.href = UNION_SITE_URL; }
 document.querySelectorAll('nav#nav a').forEach(a=>{
