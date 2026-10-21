@@ -608,6 +608,19 @@ function onSnapshot(ref, cb, errCb){
   if(!k){ setTimeout(()=> cb(colSnap({})), 0); return ()=>{}; }
   return UREF(k).onSnapshot(d=>{ const v = parseStore(d); cb(ref.kind==='c' ? colSnap(v||{}) : docSnap(ref.id, v)); }, errCb);
 }
+// ----- 처음 열 때 한 번: 이 파일에 들어 있던 회계 내역(SEED_ENTRIES)을 노동조합 클라우드에 자동으로 넣음 -----
+async function acctSeedOnce(){
+  if(!unionOk()) return;
+  try{
+    if(await readStore('acct_seeded')) return;
+    const key = e=> [e.date, e.type, e.item, Number(e.amount), e.note||''].join('|'), base = Date.now();
+    await mutate('acct_entries', cur=>{
+      const have = new Set(Object.values(cur).map(key));
+      SEED_ENTRIES.forEach((e, i)=>{ if(!have.has(key(e))) cur['s' + String(i).padStart(4, '0')] = Object.assign({}, e, {ts: base + i}); });
+    });
+    await writeStore('acct_seeded', {at: Date.now(), n: SEED_ENTRIES.length});
+  }catch(e){ console.error('seed', e); }
+}
 // ----- 예전 회계 Firebase → 노동조합 클라우드로 한 번 옮기기 -----
 async function acctMigrateCheck(){
   if(!unionOk()) return;
@@ -2317,7 +2330,7 @@ async function init(){
   onAuthStateChanged(auth, (user)=>{
     if(user){
       currentUser = user; editMode = true;
-      hideLogin(); refreshLockUI();
+      hideLogin(); refreshLockUI(); acctSeedOnce();
       attachListeners();
       loadOfficeData();
       loadAudit(Number($('#a-year').value), $('#a-quarter').value);
