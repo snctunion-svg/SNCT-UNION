@@ -1476,6 +1476,73 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
   .uwPCh.sec{font-size:11.5pt;}
   .uwPPre{font-family:"D2Coding","Nanum Gothic Coding","Courier New",monospace;font-size:8pt;line-height:1.4;white-space:pre-wrap;margin:1mm 0 2mm;border:0;}
 }
+/* ===== UNION > 캘린더 ===== */
+.calTop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+.calNav{display:flex;align-items:center;gap:4px;}
+.calNav button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;width:36px;height:36px;font-size:18px;line-height:1;cursor:pointer;}
+.calYm{font-size:18px;font-weight:800;min-width:118px;text-align:center;letter-spacing:-.02em;}
+.calTop .spacer{flex:1 1 auto;}
+.calLegend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--text-muted);margin:0 0 8px;}
+.calLegend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+.calGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);gap:1px;}
+.calDow{background:var(--surface);text-align:center;font-size:12px;font-weight:800;padding:7px 0;color:var(--text-muted);}
+.calDow.sun{color:#dc2626;} .calDow.sat{color:#2563eb;}
+.calCell{background:var(--surface);min-height:104px;padding:5px 5px 6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0;position:relative;text-align:left;border:0;font:inherit;color:inherit;}
+.calCell:hover{background:var(--btn-soft);}
+.calCell.out{background:var(--bg);cursor:default;}
+.calCell.out .calNum{opacity:.35;}
+.calCell.sel{box-shadow:inset 0 0 0 2px var(--btn);}
+.calNumRow{display:flex;align-items:center;gap:4px;min-width:0;}
+.calNum{font-size:13px;font-weight:800;line-height:22px;min-width:22px;height:22px;text-align:center;border-radius:11px;flex:none;}
+.calCell.sat .calNum{color:#2563eb;}
+.calCell.sun .calNum,.calCell.hol .calNum{color:#dc2626;}
+.calCell.today .calNum{background:var(--btn);color:#fff;}
+.calHol{font-size:10.5px;color:#dc2626;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.calEv{font-size:11.5px;line-height:1.3;padding:2px 5px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;border-left:3px solid currentColor;}
+.calEv b{font-weight:800;margin-right:3px;}
+.calMore{font-size:11px;color:var(--text-muted);font-weight:700;padding-left:3px;}
+.calDots{display:none;gap:3px;flex-wrap:wrap;padding:0 2px;}
+.calDots i{width:7px;height:7px;border-radius:50%;display:block;}
+.calC-gen{color:#be185d;background:#fdf2f8;} .calC-meet{color:#1d4ed8;background:#eff6ff;} .calC-nego{color:#6d28d9;background:#f5f3ff;}
+.calC-event{color:#047857;background:#ecfdf5;} .calC-edu{color:#b45309;background:#fffbeb;} .calC-etc{color:#475569;background:#f1f5f9;}
+.calD-gen{background:#db2777;} .calD-meet{background:#2563eb;} .calD-nego{background:#7c3aed;} .calD-event{background:#059669;} .calD-edu{background:#d97706;} .calD-etc{background:#64748b;}
+.calDay{margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.calDayHd{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.calDayHd b{font-size:15px;}
+.calDayHd .calHolTag{font-size:11.5px;color:#dc2626;font-weight:700;}
+.calDayHd .spacer{flex:1 1 auto;}
+.calList{display:flex;flex-direction:column;gap:6px;}
+.calItem{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%;}
+.calItem:hover{border-color:var(--btn-line);background:var(--btn-soft);}
+.calItemBar{width:4px;align-self:stretch;border-radius:2px;flex:none;}
+.calItemMain{min-width:0;flex:1;}
+.calItemT{font-weight:800;font-size:14px;word-break:break-all;}
+.calItemS{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.calItemM{font-size:12.5px;margin-top:4px;white-space:pre-wrap;word-break:break-all;}
+.calEmpty{font-size:12.5px;color:var(--text-muted);padding:6px 2px;}
+.calMonthHd{margin:16px 0 8px;font-size:14px;font-weight:800;}
+.calMonthDate{font-size:12px;font-weight:800;color:var(--text-muted);margin:8px 0 4px;}
+.calPop{max-width:420px;}
+.calForm{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px;}
+.calForm label{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--text-muted);min-width:0;}
+.calForm label.full{grid-column:1 / -1;}
+.calForm input,.calForm select,.calForm textarea{border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:16px;background:var(--bg);color:var(--text);min-width:0;width:100%;box-sizing:border-box;}
+.calForm textarea{min-height:80px;resize:vertical;}
+.calColors{display:flex;gap:6px;flex-wrap:wrap;}
+.calColors button{border:1px solid var(--border);border-radius:16px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;}
+.calColors button.on{box-shadow:0 0 0 2px currentColor;}
+.calPopBtns{display:flex;gap:8px;padding:0 12px 14px;flex-wrap:wrap;}
+.calPopBtns .spacer{flex:1 1 auto;}
+@media (max-width:700px){
+  .calCell{min-height:64px;padding:3px 2px 4px;}
+  .calEv{display:none;} .calMore{display:none;}
+  .calDots{display:flex;}
+  .calHol{font-size:9px;text-align:center;}
+  .calNumRow{flex-direction:column;gap:0;}
+  .calNum{font-size:12.5px;}
+  .calYm{font-size:16px;min-width:104px;}
+  .calForm{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -3416,7 +3483,7 @@ const UNION_EMAILS = ['union@snct-d40ed.firebaseapp.com'];
 const EDITOR_EMAILS = [...UNION_EMAILS, ...LEADER_EMAILS];
 const VIEWER_VIEWS = ['input','combined','ot','dispatch','splan','pwchange','accident']; // 근태관리 구역 = 배포용(누구나). 근태코드는 조장관리 구역이라 조장·UNION만 // 업무 메뉴 없앰: 선석 조회·본선작업 삭제, 경위서&학자금은 조장관리로 // codes: 누구나 보기(수정은 UNION만)
 const LEADER_VIEWS = ['input','combined','ot','dispatch','splan','grid','mail','safety','input2','accident','berth','vessel','team','holidays','leaderhub'];
-const UNION_VIEWS  = ['unionhub','workhub','uwmem','uwform','uwregs','uwjobs','unana','settle','uwemp','uwwork','uwrule','uwelect','uwlmc','berth','vessel','team','holidays','codes','backup','employees','codestats','payroll','eqpay','fcana','supcut','holguar','allcut','accident'];
+const UNION_VIEWS  = ['unionhub','workhub','uwmem','uwcal','uwform','uwregs','uwjobs','unana','settle','uwemp','uwwork','uwrule','uwelect','uwlmc','berth','vessel','team','holidays','codes','backup','employees','codestats','payroll','eqpay','fcana','supcut','holguar','allcut','accident'];
 const LEADER_READONLY_VIEWS = ['codes']; // accident = 업무 > 사고&학자금(누구나 작성·출력) // 조장관리·배포(보기전용)는 보기만(근태코드 수정은 UNION만)
 let userRole = null; // null | 'leader' | 'union' | 'all'(미리보기)
 let leaderTeam = null; // 조별 조장으로 로그인했을 때 그 조('1'·'2'), 아니면 null(UNION·공용 조장은 두 조 모두)
@@ -4533,7 +4600,7 @@ document.addEventListener('focusout', ()=>{
 // ===== UNION 시트 =====
 const UNION_SHEETS = [['payroll','💰','장비 시급'],['eqpay','🧾','장비 급여 관리'],['settle','🤝','연도별 타결'],['unana','📊','분석·폐지 검토'],['backup','💾','백업·복원']];   // 휴무 2명 분석·지원 폐지·휴일보전·보전 폐지 = '분석·폐지 검토' 하나로 묶음
 const LEADER_SHEETS = [['safety','🦺','관리감독자'],['codes','🏷️','근태코드'],['mail','📧','메일 송부'],['berth','⚓','선석 조회'],['vessel','🚢','본선작업'],['team','🧩','조편성 관리'],['holidays','📅','공휴일 관리']];
-const WORK_SHEETS = [['uwmem','👥','조합원 명부'],['uwform','📄','양식'],['uwregs','📘','규약&규정'],['uwjobs','📗','취업&업무']];   // UNION WORK 시트(UNION만)
+const WORK_SHEETS = [['uwmem','👥','조합원 명부'],['uwform','📄','양식'],['uwregs','📘','규약&규정'],['uwjobs','📗','취업&업무'],['uwcal','🗓️','캘린더']];   // UNION WORK 시트(UNION만)
 // 묶음 시트: 경위서&학자금처럼 위에서 규정을 골라 보고 출력. 마지막에 본 규정을 기억
 const UW_GROUPS = {unana:[['fcana','📊 휴무 2명 분석'],['supcut','✂️ 지원 폐지'],['holguar','🗓️ 휴일보전'],['allcut','🧮 보전 폐지']], uwregs:[['uwrule','📘 규약'],['uwlmc','🤝 노사협의회규정'],['uwelect','🗳️ 선거관리규정']], uwjobs:[['uwemp','📗 취업규칙'],['uwwork','🏢 업무규정']]};
 const uwGrpLast = (()=>{ const d = {unana:'fcana', uwregs:'uwrule', uwjobs:'uwemp'}; try{ const o = JSON.parse(localStorage.getItem('snct_uw_grp')||'{}'); Object.keys(d).forEach(g=>{ if(o[g] && UW_GROUPS[g].some(x=> x[0]===o[g])) d[g] = o[g]; }); }catch(e){} return d; })();
@@ -4568,6 +4635,135 @@ function pageHub(list){
   return `<div class="unionHub"><p class="hint" style="margin:0 0 10px;">볼 시트를 골라 주세요.</p>
     <div class="unionGrid">${list.filter(([v])=> roleCanSee(v)).map(([v,ic,l])=> `<button type="button" class="unionCard" data-union-go="${v}"><span class="unionIc">${ic}</span><b>${esc(l)}</b></button>`).join('')}</div></div>`;
 }
+// ===== UNION > 캘린더: 월별 일정 보기·입력. 클라우드 unionPrivate/cal_YYYY-MM 에 달마다 저장(UNION만) =====
+const CAL_CATS = [['gen','일반'],['meet','회의'],['nego','교섭'],['event','행사'],['edu','교육'],['etc','기타']];
+let calYm = (()=>{ const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();
+let calSel = todayStr();            // 고른 날짜
+let calData = {};                   // 'YYYY-MM' -> [일정]
+let calKeySub = '';                 // 지금 구독 중인 달
+let calEdit = null;                 // 고치는 중인 일정 {id?, d, t, title, memo, c}
+let calErr = '';
+function calKey(y, m){ return `${y}-${pad2(m)}`; }
+function calParse(doc){ try{ const a = JSON.parse((doc && doc.json) || '[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+function subscribeCal(){
+  if(!db || !(userRole==='union' || userRole==='all')) return;
+  const k = calKey(calYm.y, calYm.m);
+  if(calKeySub===k && unsub.cal) return;
+  if(unsub.cal){ try{ unsub.cal(); }catch(e){} unsub.cal = null; }
+  calKeySub = k;
+  try{ unsub.cal = db.collection('unionPrivate').doc('cal_' + k).onSnapshot(doc=>{ calData[k] = doc.exists ? calParse(doc.data()) : []; calErr = ''; if(VIEW==='uwcal' && !calEdit) scheduleRender(); },
+    ()=>{ calErr = '캘린더를 읽을 권한이 없어요(UNION 로그인 필요).'; if(VIEW==='uwcal') scheduleRender(); }); }catch(e){}
+}
+async function calLoadMonth(k){
+  if(calData[k]) return calData[k];
+  try{ const d = await db.collection('unionPrivate').doc('cal_' + k).get(); calData[k] = d.exists ? calParse(d.data()) : []; }catch(e){ calData[k] = []; }
+  return calData[k];
+}
+async function calSaveMonth(k, list){
+  list.sort((a,b)=> (a.d + (a.t||'')).localeCompare(b.d + (b.t||'')));
+  calData[k] = list;
+  await db.collection('unionPrivate').doc('cal_' + k).set({json: JSON.stringify(list), at: Date.now()});
+}
+function calCatName(c){ const f = CAL_CATS.find(x=> x[0]===c); return f ? f[1] : '일반'; }
+function calDayEvents(ds){ return (calData[ds.slice(0,7)] || []).filter(e=> e.d===ds); }
+function calDateLabel(ds){ const [y,m,d] = ds.split('-').map(Number); const w = '일월화수목금토'[new Date(y, m-1, d).getDay()]; return `${m}월 ${d}일 (${w})`; }
+function calItemHtml(e){
+  return `<button type="button" class="calItem" data-cal-ev="${esc(e.id)}"><span class="calItemBar calD-${esc(e.c||'gen')}"></span><span class="calItemMain">
+    <div class="calItemT">${esc(e.title||'(제목 없음)')}</div>
+    <div class="calItemS">${e.t ? esc(e.t) + ' · ' : ''}${esc(calCatName(e.c))}</div>
+    ${e.memo ? `<div class="calItemM">${esc(e.memo)}</div>` : ''}</span></button>`;
+}
+function pageUwCal(){
+  subscribeCal();
+  const {y, m} = calYm, k = calKey(y, m), list = calData[k] || [];
+  if(calSel.slice(0,7)!==k) calSel = (k===todayStr().slice(0,7)) ? todayStr() : dstr(y, m, 1);
+  const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate(), today = todayStr();
+  const cells = [];
+  for(let i = 0; i < first; i++) cells.push('<div class="calCell out"></div>');
+  for(let d = 1; d <= days; d++){
+    const ds = dstr(y, m, d), w = (first + d - 1) % 7, ev = list.filter(e=> e.d===ds), hol = holidays[ds];
+    const cls = ['calCell', w===0 ? 'sun' : w===6 ? 'sat' : '', hol ? 'hol' : '', ds===today ? 'today' : '', ds===calSel ? 'sel' : ''].filter(Boolean).join(' ');
+    cells.push(`<button type="button" class="${cls}" data-cal-day="${ds}" aria-label="${esc(calDateLabel(ds))} 일정 ${ev.length}개">
+      <span class="calNumRow"><span class="calNum">${d}</span>${hol ? `<span class="calHol">${esc(hol)}</span>` : ''}</span>
+      ${ev.slice(0,3).map(e=> `<span class="calEv calC-${esc(e.c||'gen')}">${e.t ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}
+      ${ev.length > 3 ? `<span class="calMore">+${ev.length-3}개 더</span>` : ''}
+      ${ev.length ? `<span class="calDots">${ev.slice(0,4).map(e=> `<i class="calD-${esc(e.c||'gen')}"></i>`).join('')}</span>` : ''}
+    </button>`);
+  }
+  while(cells.length % 7) cells.push('<div class="calCell out"></div>');
+  const selEv = list.filter(e=> e.d===calSel);
+  const byDate = {}; list.forEach(e=> (byDate[e.d] = byDate[e.d] || []).push(e));
+  const monthList = Object.keys(byDate).sort().map(ds=> `<div class="calMonthDate">${esc(calDateLabel(ds))}${holidays[ds] ? ' · ' + esc(holidays[ds]) : ''}</div><div class="calList">${byDate[ds].map(calItemHtml).join('')}</div>`).join('');
+  const pop = calEdit ? `<div class="sheetPopScrim" id="calScrim"><div class="sheetPop calPop" role="dialog" aria-label="일정 ${calEdit.id ? '수정' : '추가'}">
+      <div class="sheetPopHd"><b>${calEdit.id ? '일정 수정' : '일정 추가'}</b><button type="button" class="sheetPopX" id="calClose" aria-label="닫기">✕</button></div>
+      <div class="calForm">
+        <label><span>날짜</span><input type="date" id="calFD" value="${esc(calEdit.d)}"></label>
+        <label><span>시간 (선택)</span><input type="time" id="calFT" value="${esc(calEdit.t||'')}"></label>
+        <label class="full"><span>제목</span><input type="text" id="calFTitle" maxlength="60" placeholder="예: 임금교섭 3차" value="${esc(calEdit.title||'')}"></label>
+        <label class="full"><span>분류</span><span class="calColors">${CAL_CATS.map(([c,l])=> `<button type="button" class="calC-${c}${(calEdit.c||'gen')===c ? ' on' : ''}" data-cal-c="${c}">${l}</button>`).join('')}</span></label>
+        <label class="full"><span>메모 (장소·참석자 등)</span><textarea id="calFMemo" maxlength="1000">${esc(calEdit.memo||'')}</textarea></label>
+      </div>
+      <div class="calPopBtns">${calEdit.id ? '<button type="button" class="btn ghost sm" id="calDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="calCancel">취소</button><button type="button" class="btn" id="calSave">💾 저장</button></div>
+    </div></div>` : '';
+  return `
+  <h2 class="pgttl">캘린더</h2>
+  <div class="uwHead"><b>캘린더</b><span>선광신컨테이너터미널㈜ 노동조합 · 월별 일정</span></div>
+  ${calErr ? `<div class="note">${esc(calErr)}</div>` : ''}
+  <div class="calTop">
+    <div class="calNav"><button type="button" id="calPrev" aria-label="이전 달">‹</button><span class="calYm">${y}년 ${m}월</span><button type="button" id="calNext" aria-label="다음 달">›</button></div>
+    <button type="button" class="btn ghost sm" id="calToday">오늘</button>
+    <span class="spacer"></span>
+    <button type="button" class="btn sm" id="calAdd">＋ 일정 추가</button>
+  </div>
+  <div class="calLegend">${CAL_CATS.map(([c,l])=> `<span><i class="calD-${c}"></i>${l}</span>`).join('')}</div>
+  <div class="calGrid">${'일월화수목금토'.split('').map((w,i)=> `<div class="calDow${i===0 ? ' sun' : i===6 ? ' sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
+  <div class="calDay">
+    <div class="calDayHd"><b>${esc(calDateLabel(calSel))}</b>${holidays[calSel] ? `<span class="calHolTag">${esc(holidays[calSel])}</span>` : ''}<span class="spacer"></span><button type="button" class="btn ghost sm" id="calAddDay">＋ 이 날 일정</button></div>
+    <div class="calList">${selEv.length ? selEv.map(calItemHtml).join('') : '<div class="calEmpty">이 날은 일정이 없어요. [＋ 이 날 일정]을 눌러 넣어 보세요.</div>'}</div>
+  </div>
+  <div class="calMonthHd">${m}월 전체 일정 ${list.length}건</div>
+  ${monthList || '<div class="calEmpty">이번 달 일정이 없어요.</div>'}
+  ${pop}`;
+}
+function calOpen(ev){ calEdit = ev ? Object.assign({}, ev) : {d: calSel, t:'', title:'', memo:'', c:'gen'}; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
+function calClose(){ calEdit = null; render(); }
+function calGo(dm){ let {y, m} = calYm; m += dm; if(m < 1){ m = 12; y--; } if(m > 12){ m = 1; y++; } calYm = {y, m}; calSel = ''; render(); }
+function bindUwCal(){
+  const $ = id=> document.getElementById(id);
+  if($('calPrev')) $('calPrev').onclick = ()=> calGo(-1);
+  if($('calNext')) $('calNext').onclick = ()=> calGo(1);
+  if($('calToday')) $('calToday').onclick = ()=>{ const t = new Date(); calYm = {y:t.getFullYear(), m:t.getMonth()+1}; calSel = todayStr(); render(); };
+  if($('calAdd')) $('calAdd').onclick = ()=> calOpen(null);
+  if($('calAddDay')) $('calAddDay').onclick = ()=> calOpen(null);
+  document.querySelectorAll('[data-cal-day]').forEach(b=> b.onclick = ()=>{ calSel = b.dataset.calDay; render(); const p = document.querySelector('.calDay'); if(p && window.innerWidth <= 700) p.scrollIntoView({behavior:'smooth', block:'nearest'}); });
+  document.querySelectorAll('[data-cal-ev]').forEach(b=> b.onclick = ()=>{ const k = calKey(calYm.y, calYm.m); const e = (calData[k]||[]).find(x=> x.id===b.dataset.calEv); if(e) calOpen(e); });
+  if(!calEdit) return;
+  const scrim = $('calScrim');
+  if(scrim) scrim.onclick = e=>{ if(e.target===scrim) calClose(); };
+  $('calClose').onclick = calClose; $('calCancel').onclick = calClose;
+  document.querySelectorAll('[data-cal-c]').forEach(b=> b.onclick = ()=>{ calEdit.c = b.dataset.calC; document.querySelectorAll('[data-cal-c]').forEach(x=> x.classList.toggle('on', x===b)); });
+  if($('calDel')) $('calDel').onclick = async ()=>{
+    if(!confirm('이 일정을 지울까요?')) return;
+    const k = calEdit.d0 ? calEdit.d0.slice(0,7) : calEdit.d.slice(0,7);
+    try{ const list = (await calLoadMonth(k)).filter(x=> x.id!==calEdit.id); await calSaveMonth(k, list); showToast('일정을 지웠어요.'); calEdit = null; render(); }
+    catch(e){ showToast('지우지 못했어요: ' + (e.message||e)); }
+  };
+  $('calSave').onclick = async ()=>{
+    const d = $('calFD').value, t = $('calFT').value, title = $('calFTitle').value.trim(), memo = $('calFMemo').value.trim();
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ showToast('날짜를 골라 주세요.'); return; }
+    if(!title){ showToast('제목을 적어 주세요.'); $('calFTitle').focus(); return; }
+    const old = calEdit.id ? (calData[calKey(calYm.y, calYm.m)]||[]).find(x=> x.id===calEdit.id) : null;
+    const ev = {id: calEdit.id || ('e' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)), d, t, title, memo, c: calEdit.c || 'gen'};
+    const btn = $('calSave'); btn.disabled = true;
+    try{
+      const nk = d.slice(0,7), ok = old ? old.d.slice(0,7) : nk;
+      if(old && ok!==nk){ await calSaveMonth(ok, (await calLoadMonth(ok)).filter(x=> x.id!==ev.id)); }
+      const list = (await calLoadMonth(nk)).filter(x=> x.id!==ev.id); list.push(ev); await calSaveMonth(nk, list);
+      showToast('일정을 저장했어요.');
+      calEdit = null; calSel = d; const [yy, mm] = d.split('-').map(Number); calYm = {y:yy, m:mm}; render();
+    }catch(e){ btn.disabled = false; showToast('저장하지 못했어요: ' + (e.message||e)); }
+  };
+}
 function render(){
   renderDeferred = false;
   const el = document.getElementById('content');
@@ -4601,6 +4797,7 @@ function render(){
   else if(VIEW==='pwchange') el.innerHTML = pagePwChange();
   else if(isUwView(VIEW)){ el.innerHTML = uwGroupBar(VIEW) + pageUwDoc(VIEW); bindUwDoc(VIEW); bindUwGroupSel(); }
   else if(VIEW==='uwmem'){ el.innerHTML = pageUwMem(); bindUwMem(); }
+  else if(VIEW==='uwcal'){ el.innerHTML = pageUwCal(); bindUwCal(); }
   else if(VIEW==='uwform'){ el.innerHTML = pageUwFormView(); bindUwForm(); uwFormFit(); }
   else if(VIEW==='unionhub') el.innerHTML = pageHub(UNION_SHEETS);
   else if(VIEW==='leaderhub') el.innerHTML = pageHub(LEADER_SHEETS);
