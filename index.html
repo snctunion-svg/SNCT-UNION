@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
-<title>SNCT UNION</title>
+<title>SNCT 노동조합</title>
 <link rel="manifest" href="manifest.webmanifest?v=1">
 <meta name="theme-color" content="#4c1d95">
 <link rel="icon" type="image/png" href="icon-snct-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-snct.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="SNCT UNION">
+<meta name="apple-mobile-web-app-title" content="SNCT 노동조합">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 /* 아이폰 Safari·안드로이드 크롬의 '글자 자동 확대' 끄기 — 서류를 화면에 맞춰 줄였을 때 일부 글씨만 커지는 문제 방지 */
@@ -1038,6 +1038,7 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
   .cmbTeamRow{margin-bottom:8px !important;}
 }
 @media (max-width:700px){ header.app .status{min-width:0;flex-shrink:1;} header.app h1{flex:none;} }
+@media (max-width:700px){ header.app .status span{white-space:normal;text-align:right;line-height:1.25;} header.app .status{overflow:hidden;} }
 /* 월별 OT현황: 이전달 · 연월 · 다음달 한 줄 */
 .otMonRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 8px;}
 .otMonTxt{font-size:16px;white-space:nowrap;}
@@ -1479,7 +1480,7 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 <body>
 <header class="app">
   <button class="menu-btn" id="menuBtn" aria-label="메뉴">☰</button>
-  <h1>SNCT UNION</h1>
+  <h1>SNCT 노동조합</h1>
   <div class="sub" id="headerSub" style="display:none;"></div>
   <div class="spacer"></div>
   <div class="zoomFab" id="zoomFab" aria-label="화면 확대·축소"><button type="button" data-zoom="-" aria-label="축소">−</button><button type="button" data-zoom="0" id="zoomFabPct" aria-label="원래 크기">100%</button><button type="button" data-zoom="+" aria-label="확대">＋</button></div>
@@ -1496,7 +1497,7 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
     <a data-view="splan"><span class="ic">📋</span>지원계획표</a>
     <a data-view="accident"><span class="ic">📝</span>경위서&amp;학자금</a>
     <a class="navttl navUnion" data-view="leaderhub" data-role-section="leader" style="margin-top:10px;">조장관리 <span class="navUnionArr">›</span></a>
-    <a class="navttl navUnion" id="navUnionSite" href="#" target="_blank" rel="noopener" data-role-section="union" style="margin-top:10px;">SNCT UNION <span class="navUnionArr">↗</span></a>
+    <a class="navttl navUnion" id="navUnionSite" href="#" target="_blank" rel="noopener" data-role-section="union" style="margin-top:10px;">SNCT 노동조합 <span class="navUnionArr">↗</span></a>
     <a class="navttl navUnion" data-view="unionhub" data-role-section="union" style="margin-top:10px;">UNION WORK <span class="navUnionArr">›</span></a>
   </nav>
   <main id="content"></main>
@@ -4441,7 +4442,7 @@ async function deleteSupportPlanWeek(startStr){
 function pageUnionGate(){
   const wrong = authResolved && currentUser;   // 로그인은 했는데 UNION 계정이 아님
   return `<div class="unGate"><div class="unGateCard">
-    <div class="unGateLogo">🛡</div><h2>SNCT UNION</h2>
+    <div class="unGateLogo">🛡</div><h2>SNCT 노동조합</h2>
     <p>선광신컨테이너터미널㈜ 노동조합<br>조합원 명부 · 양식 · 규약&amp;규정 · 취업&amp;업무</p>
     ${!authResolved && !demoMode ? '<p class="hint">로그인 확인 중…</p>'
       : wrong ? `<p style="color:var(--warn);font-weight:700;">UNION 계정이 아니에요.</p><button type="button" class="btn ghost" id="unGateOut">로그아웃</button>`
@@ -11329,8 +11330,8 @@ document.addEventListener('change', (e)=>{
 
 /* ========================= 내비게이션/모바일 ========================= */
 if(SITE_UNION){   // SNCT UNION: 메뉴는 조합원 명부·양식·규약&규정·취업&업무만
-  document.getElementById('nav').innerHTML = '<div class="navttl">SNCT UNION</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}" data-role-section="union"><span class="ic">${ic}</span>${l}</a>`).join('');
-  const h1 = document.querySelector('header.app h1'); if(h1) h1.textContent = 'SNCT UNION';
+  document.getElementById('nav').innerHTML = '<div class="navttl">SNCT 노동조합</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}" data-role-section="union"><span class="ic">${ic}</span>${l}</a>`).join('');
+  const h1 = document.querySelector('header.app h1'); if(h1) h1.textContent = 'SNCT 노동조합';
 } else { const us = document.getElementById('navUnionSite'); if(us) us.href = UNION_SITE_URL; }
 document.querySelectorAll('nav#nav a').forEach(a=>{
   a.addEventListener('click', ()=>{ if(a.dataset.view) setView(a.dataset.view); });
