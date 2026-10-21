@@ -56,7 +56,12 @@ h1,h2,h3{font-family:'Noto Serif KR', Georgia, serif; margin:0;}
 .global-print-btn:hover{background:rgba(255,255,255,.2)}
 .global-print-btn.fit{background:#FFFFFF;color:#9D174D;border-color:#FFFFFF;font-weight:800}
 .app-version{font:600 11px 'Noto Sans KR',sans-serif;color:#FCE7F3;vertical-align:middle;margin-left:5px}
-html.acct-embed #lnk-lock-toggle,html:not(.acct-embed) .login-embed,html.acct-embed .login-normal{display:none !important;}
+#acct-migrate{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;z-index:10050;padding:16px;}
+#acct-migrate .mg-box{background:#fff;border-radius:14px;max-width:420px;width:100%;padding:24px 22px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,.3);max-height:calc(100vh - 32px);overflow:auto;}
+#acct-migrate .icon{font-size:36px;} #acct-migrate h3{color:var(--pri-deep);margin:6px 0 8px;font-size:19px;}
+#acct-migrate p{font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.6;}
+#acct-migrate input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;font-size:16px;}
+#lnk-lock-toggle{display:none !important;}
 #login-overlay{
   position:fixed; inset:0; background:rgba(15,23,42,.72); backdrop-filter:blur(2px);
   display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;
@@ -353,15 +358,24 @@ tbody tr:hover td{background:#FCE7F3;}
     </div>
   </div>
 </div>
-<div id="acct-wait" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-size:15px;color:#64748b;">회계 연결 중…</div>
+<div id="acct-migrate" style="display:none;">
+  <div class="mg-box">
+    <div class="icon">📦</div>
+    <h3>예전 회계 데이터 옮기기</h3>
+    <p>회계가 이제 <b>SNCT 노동조합 클라우드</b>에 저장돼요(UNION 로그인만 하면 열림).<br>지금까지 입력한 내역을 <b>한 번만</b> 옮겨 오세요.<br>예전 회계 계정으로 로그인하면 자동으로 옮겨져요.</p>
+    <input type="email" id="mg-email" placeholder="예전 회계 이메일" value="snctunion@gmail.com" autocomplete="username">
+    <input type="password" id="mg-pw" placeholder="예전 회계 비밀번호" autocomplete="current-password" style="margin-top:8px;">
+    <button type="button" class="btn btn-primary" id="mg-go" style="margin-top:12px;width:100%;">옮기기</button>
+    <div id="mg-msg" style="font-size:12.5px;margin-top:10px;white-space:pre-line;"></div>
+    <button type="button" class="btn btn-outline" id="mg-skip" style="margin-top:14px;width:100%;">옮길 데이터 없음 (새로 시작)</button>
+  </div>
+</div>
 <div id="login-overlay">
   <div id="login-box">
     <div class="icon">📒</div>
     <h3>회계</h3>
-    <p class="login-normal">등록된 계정으로 로그인하세요.<br>계정은 관리자가 Firebase 콘솔에서 직접 등록합니다.</p><p class="login-embed">처음 한 번만 회계 계정으로 로그인해 주세요.<br>다음부터는 UNION 로그인만 하면 자동으로 들어가요.</p>
-    <input type="email" id="login-email" placeholder="이메일" autocomplete="username">
-    <input type="password" id="login-password" placeholder="비밀번호" autocomplete="current-password" style="margin-top:8px;">
-    <button class="btn btn-primary" id="btn-login" style="margin-top:12px;">로그인</button>
+    <p>SNCT 노동조합 사이트에서 <b>UNION</b>으로 로그인한 뒤<br>왼쪽 메뉴의 <b>💰 회계</b>를 눌러 열어 주세요.</p>
+    <a class="btn btn-primary" id="btn-login" href="./" target="_top" style="margin-top:12px;display:block;text-decoration:none;">SNCT 노동조합으로 가기</a>
     <div id="login-error" style="color:var(--expense); font-size:12.5px; margin-top:10px; display:none;"></div>
   </div>
 </div>
@@ -514,26 +528,124 @@ const APP_VERSION = '1.61';
 document.title = '회계 - SNCT 노동조합';
 const SEED_ENTRIES = [{"date": "2026-06-01", "type": "수입", "category": "기타수입", "item": "이월금", "method": "계좌잔액", "amount": 9491981, "note": "전년도이월금"}, {"date": "2026-06-01", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "계좌입금", "amount": 50000, "note": "후원수입(연합인천지역본부)"}, {"date": "2026-06-01", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "계좌입금", "amount": 750000, "note": "후원수입(연합15개회원사)"}, {"date": "2026-06-01", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "계좌입금", "amount": 50000, "note": "후원수입(한국노총인천지역본부)"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 350000, "note": "상품권구입"}, {"date": "2026-06-01", "type": "지출", "category": "유지비", "item": "비품비", "method": "체크카드", "amount": 29160, "note": "음료구입"}, {"date": "2026-06-01", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "계좌입금", "amount": 50000, "note": "후원수입(영창운수)"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 405000, "note": "회의후식사비(10명)1차"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 62000, "note": "회의후식사비 2차"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 15300, "note": "대리비"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 15300, "note": "대리비"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 25500, "note": "대리비"}, {"date": "2026-06-01", "type": "지출", "category": "회의비", "item": "대의원대회", "method": "체크카드", "amount": 25500, "note": "대리비"}, {"date": "2026-06-02", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "체크카드", "amount": 100000, "note": "주유비"}, {"date": "2026-06-05", "type": "수입", "category": "고정수입", "item": "조합비", "method": "계좌입금", "amount": 2100470, "note": "5월"}, {"date": "2026-06-05", "type": "지출", "category": "의무금", "item": "노총인천본부", "method": "계좌이체", "amount": 45600, "note": "한노총"}, {"date": "2026-06-05", "type": "지출", "category": "의무금", "item": "연합연맹", "method": "계좌이체", "amount": 116000, "note": "전국연합/인천본부"}, {"date": "2026-06-05", "type": "지출", "category": "의무금", "item": "하역사", "method": "계좌이체", "amount": 70000, "note": "하역검수협의회"}, {"date": "2026-06-05", "type": "지출", "category": "의무금", "item": "중동구", "method": "계좌이체", "amount": 40000, "note": "중동구협의회"}, {"date": "2026-06-05", "type": "지출", "category": "유지비", "item": "업무추진비", "method": "계좌이체", "amount": 500000, "note": "위원장"}, {"date": "2026-06-05", "type": "지출", "category": "유지비", "item": "사무보조비", "method": "계좌이체", "amount": 100000, "note": "사무국장"}, {"date": "2026-06-08", "type": "지출", "category": "행사비", "item": "워크샵비", "method": "계좌이체", "amount": 100000, "note": "노총간부교육참가비"}, {"date": "2026-06-09", "type": "지출", "category": "행사비", "item": "워크샵비", "method": "계좌이체", "amount": 150000, "note": "노총간부교육3일충장비"}, {"date": "2026-06-10", "type": "지출", "category": "회의비", "item": "운영회의", "method": "법인카드", "amount": 99000, "note": "운영회의(4/27)후식사2차"}, {"date": "2026-06-10", "type": "지출", "category": "회의비", "item": "운영회의", "method": "법인카드", "amount": 324000, "note": "운영회의(4/27)후식사"}, {"date": "2026-06-10", "type": "지출", "category": "회의비", "item": "운영회의", "method": "법인카드", "amount": 25500, "note": "운영회의(4/27)후대리1건"}, {"date": "2026-06-10", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "법인카드", "amount": 99500, "note": "주유비(5/15)"}, {"date": "2026-06-13", "type": "수입", "category": "기타수입", "item": "결산이자", "method": "계좌입금", "amount": 4878, "note": "잔고이자"}, {"date": "2026-06-15", "type": "지출", "category": "행사비", "item": "찬조비", "method": "계좌이체", "amount": 100000, "note": "회원사후원(스태츠칩팩코리아)"}, {"date": "2026-06-16", "type": "지출", "category": "유지비", "item": "비품비", "method": "계좌이체", "amount": 100530, "note": "다과구입(사무장비용처리)"}, {"date": "2026-06-16", "type": "지출", "category": "회의비", "item": "각종회의비", "method": "체크카드", "amount": 265000, "note": "2차협상후식사1차"}, {"date": "2026-06-16", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 15300, "note": "2차협상후대리비"}, {"date": "2026-06-16", "type": "지출", "category": "회의비", "item": "각종회의비", "method": "체크카드", "amount": 113500, "note": "2차협상후식사2차"}, {"date": "2026-06-16", "type": "지출", "category": "회의비", "item": "각종회의비", "method": "체크카드", "amount": 48800, "note": "2차협상후식사3차"}, {"date": "2026-06-16", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 6400, "note": "사무국장택시오사용17일입금"}, {"date": "2026-06-16", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 25500, "note": "2차협상후대리비"}, {"date": "2026-06-17", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "체크카드", "amount": 6400, "note": "16일사무국장오사용분처리"}, {"date": "2026-06-20", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "계좌이체", "amount": 75000, "note": "이상필대표모친상 근조화환"}, {"date": "2026-06-22", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 30000, "note": "3차협상 후 식사비"}, {"date": "2026-06-22", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 25500, "note": "3차협상 후 대리비"}, {"date": "2026-06-29", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 170000, "note": "4차협상 후 식사1차"}, {"date": "2026-06-29", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 103000, "note": "4차협상 후 식사2차"}, {"date": "2026-06-29", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 15300, "note": "4차협상 후 대리비"}, {"date": "2026-06-29", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 25500, "note": "4차협상 후 대리비"}, {"date": "2026-07-03", "type": "수입", "category": "고정수입", "item": "조합비", "method": "계좌입금", "amount": 2100470, "note": "6월"}, {"date": "2026-07-06", "type": "수입", "category": "기타수입", "item": "찬조수입", "method": "계좌입금", "amount": 74000, "note": "오사용분 7/6입금(위원장)"}, {"date": "2026-07-06", "type": "지출", "category": "의무금", "item": "연합연맹", "method": "계좌이체", "amount": 116000, "note": "전국연합/인천본부"}, {"date": "2026-07-06", "type": "지출", "category": "의무금", "item": "노총인천본부", "method": "계좌이체", "amount": 45600, "note": "한노총"}, {"date": "2026-07-06", "type": "지출", "category": "의무금", "item": "하역사", "method": "계좌이체", "amount": 70000, "note": "하역검수협의회"}, {"date": "2026-07-06", "type": "지출", "category": "의무금", "item": "중동구", "method": "계좌이체", "amount": 40000, "note": "중동구협의회"}, {"date": "2026-07-06", "type": "지출", "category": "유지비", "item": "업무추진비", "method": "계좌이체", "amount": 500000, "note": "위원장"}, {"date": "2026-07-06", "type": "지출", "category": "유지비", "item": "사무보조비", "method": "계좌이체", "amount": 100000, "note": "사무국장"}, {"date": "2026-07-06", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 121000, "note": "5차협상 후 식사1"}, {"date": "2026-07-06", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 82000, "note": "5차협상 후 식사2"}, {"date": "2026-07-06", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 40000, "note": "5차협상 후 식사3"}, {"date": "2026-07-06", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 15300, "note": "5차협상 후 대리1"}, {"date": "2026-07-06", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 25500, "note": "5차협상 후 대리2"}, {"date": "2026-07-10", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "법인카드", "amount": 99500, "note": "주유비"}, {"date": "2026-08-03", "type": "지출", "category": "유지비", "item": "비품비", "method": "계좌이체", "amount": 4400, "note": "공동인증서발급수수료"}, {"date": "2026-08-03", "type": "지출", "category": "유지비", "item": "비품비", "method": "계좌이체", "amount": 105230, "note": "다과구입(사무국장비용처리)"}, {"date": "2026-08-04", "type": "지출", "category": "의무금", "item": "연합연맹", "method": "계좌이체", "amount": 116000, "note": "전국연합/인천본부"}, {"date": "2026-08-04", "type": "지출", "category": "의무금", "item": "노총인천본부", "method": "계좌이체", "amount": 45600, "note": "한노총"}, {"date": "2026-08-04", "type": "지출", "category": "의무금", "item": "하역사", "method": "계좌이체", "amount": 70000, "note": "하역검수협의회"}, {"date": "2026-08-04", "type": "지출", "category": "의무금", "item": "중동구", "method": "계좌이체", "amount": 40000, "note": "중동구협의회"}, {"date": "2026-08-04", "type": "지출", "category": "유지비", "item": "업무추진비", "method": "계좌이체", "amount": 500000, "note": "위원장"}, {"date": "2026-08-04", "type": "지출", "category": "유지비", "item": "사무보조비", "method": "계좌이체", "amount": 100000, "note": "사무국장"}, {"date": "2026-08-05", "type": "수입", "category": "고정수입", "item": "조합비", "method": "계좌입금", "amount": 2100470, "note": "7월"}, {"date": "2026-08-05", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 45900, "note": "집행부임협회의후대리비"}, {"date": "2026-08-07", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 30600, "note": "집행부임협회의후대리비"}, {"date": "2026-08-10", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "법인카드", "amount": 99500, "note": "주유"}, {"date": "2026-08-10", "type": "지출", "category": "행사비", "item": "찬조비", "method": "법인카드", "amount": 74000, "note": "위원장오사용분(7/6입금)"}, {"date": "2026-08-10", "type": "지출", "category": "유지비", "item": "비품비", "method": "법인카드", "amount": 400, "note": "sms서비스이용료"}, {"date": "2026-08-10", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 25500, "note": "집행부임협회의후대리"}, {"date": "2026-08-13", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 143000, "note": "6차협상후식사"}, {"date": "2026-08-13", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 15300, "note": "대리비1"}, {"date": "2026-08-13", "type": "지출", "category": "회의비", "item": "집행회의", "method": "체크카드", "amount": 25500, "note": "대리비2"}, {"date": "2026-08-18", "type": "지출", "category": "행사비", "item": "찬조비", "method": "계좌이체", "amount": 50000, "note": "후원금(우련통운총회)"}, {"date": "2026-08-18", "type": "지출", "category": "행사비", "item": "찬조비", "method": "계좌이체", "amount": 20000, "note": "후원금(우련통운전별금)"}, {"date": "2026-08-18", "type": "지출", "category": "행사비", "item": "찬조비", "method": "계좌이체", "amount": 20000, "note": "후원금(대한제분전별금)"}, {"date": "2026-08-18", "type": "지출", "category": "회의비", "item": "각종회의비", "method": "체크카드", "amount": 25500, "note": "임금체결대리비1"}, {"date": "2026-08-18", "type": "지출", "category": "회의비", "item": "각종회의비", "method": "체크카드", "amount": 20400, "note": "임금체결대리비2"}, {"date": "2026-08-19", "type": "지출", "category": "워크샵비", "item": "워크샵비", "method": "체크카드", "amount": 50000, "note": "하계연친회참가비"}, {"date": "2026-08-19", "type": "지출", "category": "활동비", "item": "조직활동비", "method": "체크카드", "amount": 25500, "note": "중동구협의회대리비"}, {"date": "2026-08-24", "type": "지출", "category": "유지비", "item": "비품비", "method": "계좌이체", "amount": 800, "note": "SMS서비스이용료"}, {"date": "2026-08-26", "type": "지출", "category": "워크샵비", "item": "워크샵비", "method": "계좌이체", "amount": 150000, "note": "연친회3일출장비(위원장)"}, {"date": "2026-09-03", "type": "지출", "category": "활동비", "item": "부처활동비", "method": "체크카드", "amount": 239000, "note": "징계위후(김성용선임)식사"}, {"date": "2026-09-03", "type": "지출", "category": "활동비", "item": "부처활동비", "method": "체크카드", "amount": 54000, "note": "징계위후(김성용선임)식사2"}, {"date": "2026-09-04", "type": "수입", "category": "고정수입", "item": "조합비", "method": "계좌입금", "amount": 232780, "note": "조합비소급분"}, {"date": "2026-09-04", "type": "수입", "category": "고정수입", "item": "조합비", "method": "계좌입금", "amount": 2153860, "note": "조합비8월분"}, {"date": "2026-09-08", "type": "지출", "category": "의무금", "item": "연합연맹", "method": "계좌이체", "amount": 116000, "note": "전국연합/인천본부(9월)"}, {"date": "2026-09-08", "type": "지출", "category": "의무금", "item": "노총인천본부", "method": "계좌이체", "amount": 45600, "note": "한노총(9월)"}, {"date": "2026-09-08", "type": "지출", "category": "의무금", "item": "하역사", "method": "계좌이체", "amount": 70000, "note": "하역사협의회(9월)"}, {"date": "2026-09-08", "type": "지출", "category": "의무금", "item": "중동구", "method": "계좌이체", "amount": 40000, "note": "중동구협의회(9월)"}, {"date": "2026-09-08", "type": "지출", "category": "유지비", "item": "업무추진비", "method": "계좌이체", "amount": 500000, "note": "위원장(9월)"}, {"date": "2026-09-08", "type": "지출", "category": "유지비", "item": "사무보조비", "method": "계좌이체", "amount": 100000, "note": "사무국장(9월)"}, {"date": "2026-09-10", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "법인카드", "amount": 99500, "note": "주유비(8/4)"}, {"date": "2026-09-10", "type": "지출", "category": "회의비", "item": "집행회의", "method": "법인카드", "amount": 90000, "note": "임금회의(8/7)"}, {"date": "2026-09-10", "type": "지출", "category": "회의비", "item": "집행회의", "method": "법인카드", "amount": 94000, "note": "임금회의(8/10)"}, {"date": "2026-09-10", "type": "지출", "category": "유지비", "item": "차량유지비", "method": "법인카드", "amount": 99500, "note": "주유비(8/20)"}, {"date": "2026-09-10", "type": "지출", "category": "유지비", "item": "비품비", "method": "법인카드", "amount": 400, "note": "SMS서비스이용료(8/18)"}, {"date": "2026-09-16", "type": "지출", "category": "행사비", "item": "찬조비", "method": "계좌이체", "amount": 50000, "note": "후원금(선광대의원대회)"}, {"date": "2026-09-16", "type": "지출", "category": "유지비", "item": "비품비", "method": "계좌이체", "amount": 81320, "note": "다과구입(사무국장비용처리)"}];
 /* ====================================================================
-   Firebase 설정 - 아래 firebaseConfig를 본인의 Firebase 프로젝트 값으로 교체하세요.
-   (Firebase 콘솔 > 프로젝트 설정 > 내 앱 > SDK 설정 및 구성 에서 복사)
+   회계 데이터 저장소 = SNCT 노동조합 클라우드(unionPrivate, UNION 계정만 읽고 씀)
+   - 이 화면은 SNCT 노동조합 사이트의 '💰 회계' 메뉴 안에서만 열림 → UNION 로그인 하나로 끝
+   - 아래 함수들은 예전 Firebase(회계 전용 프로젝트)와 이름·쓰는 법이 같게 맞춘 것(나머지 코드는 그대로)
+   - 저장 위치: unionPrivate/acct_entries(전체 내역), acct_budgets(연도별 예산), acct_<묶음>_<이름>(그 밖)
 ==================================================================== */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, inMemoryPersistence }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, setDoc, getDoc, getDocs, onSnapshot }
-  from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-const firebaseConfig = {
+const OLD_ACCT_CONFIG = {
   apiKey: "AIzaSyBwC0DLPEMQ4PDB3OQy-rl40dh4Ro5PAmI",
   authDomain: "project-4718690592604576836.firebaseapp.com",
   projectId: "project-4718690592604576836",
   storageBucket: "project-4718690592604576836.firebasestorage.app",
   messagingSenderId: "481562275279",
   appId: "1:481562275279:web:bc02e842dbae28025136ba"
-};
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const fdb = getFirestore(fbApp);
+};   // 예전 회계 전용 Firebase — '예전 데이터 옮기기'에서만 씀
+const UNION = (()=>{ try{ return window.parent!==window ? window.parent.snctUnion : null; }catch(e){ return null; } })();
+const unionOk = ()=>{ try{ return !!(UNION && UNION.isUnion() && UNION.db()); }catch(e){ return false; } };
+const UREF = id=> UNION.db().collection('unionPrivate').doc(id);
+const auth = {};
+function getAuth(){ return auth; }
+function onAuthStateChanged(a, cb){ setTimeout(()=> cb(unionOk() ? {email:'UNION'} : null), 0); return ()=>{}; }
+async function signOut(){}
+const fdb = {};
+const sid = x=> String(x).replace(/[^A-Za-z0-9_-]/g, '_');
+const MAP_COLS = {entries:'acct_entries', budgets:'acct_budgets'};   // 문서가 여러 개인 묶음은 문서 하나에 모아 저장
+function storeKey(c, id){ return MAP_COLS[c] || ('acct_' + sid(c) + '_' + sid(id)); }
+function collection(_db, name){ return {kind:'c', c:name}; }
+function doc(_db, c, id){ return {kind:'d', c, id:String(id)}; }
+const clone = o=> o==null ? o : JSON.parse(JSON.stringify(o));
+function docSnap(id, o){ return {id, exists: ()=> o!=null, data: ()=> o==null ? undefined : clone(o)}; }
+function colSnap(map){ const docs = Object.keys(map||{}).map(id=> docSnap(id, map[id])); return {docs, size: docs.length, empty: !docs.length, forEach: f=> docs.forEach(f)}; }
+function parseStore(d){ if(!d || !d.exists) return null; try{ return JSON.parse((d.data()||{}).json || 'null'); }catch(e){ return null; } }
+async function readStore(k){ return parseStore(await UREF(k).get()); }
+async function writeStore(k, v){
+  const json = JSON.stringify(v);
+  if(json.length > 950000) throw new Error('회계 데이터가 너무 커서 저장하지 못했어요(1MB 한도).');
+  await UREF(k).set({json, at: Date.now()});
+}
+// 여러 문서 묶음(내역·예산)은 바뀐 것을 모아서 한 번에 저장(파일 업로드처럼 많이 넣어도 빠르게)
+const pendingQ = {};
+function mutate(k, fn, wait){
+  return new Promise((ok, no)=>{
+    const q = pendingQ[k] || (pendingQ[k] = {fns:[], waiters:[], t:0});
+    q.fns.push(fn); q.waiters.push([ok, no]);
+    clearTimeout(q.t); q.t = setTimeout(()=> flushStore(k), 250);
+  });
+}
+async function flushStore(k){
+  const q = pendingQ[k]; if(!q) return; delete pendingQ[k];
+  try{ const cur = (await readStore(k)) || {}; q.fns.forEach(f=> f(cur)); await writeStore(k, cur); q.waiters.forEach(([ok])=> ok()); }
+  catch(e){ q.waiters.forEach(([, no])=> no(e)); try{ showToast('저장 실패: ' + (e.message||e), true); }catch(_){} }
+}
+const newId = ()=> 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+async function addDoc(colRef, data){
+  const id = newId();
+  if(MAP_COLS[colRef.c]){ mutate(MAP_COLS[colRef.c], cur=>{ cur[id] = clone(data); }).catch(()=>{}); return {id}; }   // 화면은 바로 다음으로(저장은 모아서)
+  await writeStore(storeKey(colRef.c, id), clone(data)); return {id};
+}
+async function setDoc(ref, data, opts){
+  if(MAP_COLS[ref.c]) return mutate(MAP_COLS[ref.c], cur=>{ cur[ref.id] = (opts && opts.merge) ? Object.assign(cur[ref.id]||{}, clone(data)) : clone(data); });
+  const k = storeKey(ref.c, ref.id);
+  if(opts && opts.merge){ const cur = (await readStore(k)) || {}; return writeStore(k, Object.assign(cur, clone(data))); }
+  return writeStore(k, clone(data));
+}
+async function updateDoc(ref, data){
+  if(MAP_COLS[ref.c]) return mutate(MAP_COLS[ref.c], cur=>{ if(cur[ref.id]) Object.assign(cur[ref.id], clone(data)); });
+  const k = storeKey(ref.c, ref.id), cur = await readStore(k); if(!cur) throw new Error('문서가 없어요.'); return writeStore(k, Object.assign(cur, clone(data)));
+}
+async function deleteDoc(ref){
+  if(MAP_COLS[ref.c]){ mutate(MAP_COLS[ref.c], cur=>{ delete cur[ref.id]; }).catch(()=>{}); return; }
+  await UREF(storeKey(ref.c, ref.id)).set({json: 'null', at: Date.now()});
+}
+async function getDoc(ref){
+  if(MAP_COLS[ref.c]){ const m = (await readStore(MAP_COLS[ref.c])) || {}; return docSnap(ref.id, m[ref.id]); }
+  return docSnap(ref.id, await readStore(storeKey(ref.c, ref.id)));
+}
+async function getDocs(colRef){ return colSnap(MAP_COLS[colRef.c] ? ((await readStore(MAP_COLS[colRef.c])) || {}) : {}); }
+function onSnapshot(ref, cb, errCb){
+  const k = ref.kind==='c' ? MAP_COLS[ref.c] : storeKey(ref.c, ref.id);
+  if(!k){ setTimeout(()=> cb(colSnap({})), 0); return ()=>{}; }
+  return UREF(k).onSnapshot(d=>{ const v = parseStore(d); cb(ref.kind==='c' ? colSnap(v||{}) : docSnap(ref.id, v)); }, errCb);
+}
+// ----- 예전 회계 Firebase → 노동조합 클라우드로 한 번 옮기기 -----
+async function acctMigrateCheck(){
+  if(!unionOk()) return;
+  try{ const st = await readStore('acct_migrated'); if(st) return; }catch(e){ return; }
+  const box = document.getElementById('acct-migrate'); box.style.display = 'flex';
+  const msg = t=>{ document.getElementById('mg-msg').textContent = t; };
+  document.getElementById('mg-skip').onclick = async ()=>{
+    if(!confirm('예전 데이터를 옮기지 않고 새로 시작할까요?\n(나중에 다시 옮길 수 없어요)')) return;
+    await writeStore('acct_migrated', {skipped: true, at: Date.now()}); box.style.display = 'none';
+  };
+  document.getElementById('mg-go').onclick = async ()=>{
+    const email = document.getElementById('mg-email').value.trim(), pw = document.getElementById('mg-pw').value;
+    if(!email || !pw){ msg('이메일과 비밀번호를 넣어 주세요.'); return; }
+    const btn = document.getElementById('mg-go'); btn.disabled = true; msg('예전 회계에 연결 중…');
+    try{
+      const V = 'https://www.gstatic.com/firebasejs/10.13.0/';
+      const [A, U, F] = await Promise.all([import(V + 'firebase-app.js'), import(V + 'firebase-auth.js'), import(V + 'firebase-firestore.js')]);
+      const app = A.initializeApp(OLD_ACCT_CONFIG, 'oldAcct'), oa = U.getAuth(app);
+      await U.setPersistence(oa, U.inMemoryPersistence);
+      try{ await U.signInWithEmailAndPassword(oa, email, pw); }catch(e){ throw new Error('예전 회계 로그인 실패: 이메일 또는 비밀번호를 확인해 주세요.'); }
+      const of = F.getFirestore(app), all = async c=>{ const m = {}; (await F.getDocs(F.collection(of, c))).forEach(d=>{ m[d.id] = d.data(); }); return m; };
+      msg('내역을 읽는 중…');
+      const ent = await all('entries'), bud = await all('budgets'), aud = await all('audits'), forms = await all('officeForms'), meta = await all('meta');
+      msg('노동조합 클라우드에 저장하는 중…');
+      await writeStore('acct_entries', JSON.parse(JSON.stringify(ent)));
+      await writeStore('acct_budgets', JSON.parse(JSON.stringify(bud)));
+      for(const [id, v] of Object.entries(aud)) await writeStore(storeKey('audits', id), JSON.parse(JSON.stringify(v)));
+      for(const [id, v] of Object.entries(forms)) await writeStore(storeKey('officeForms', id), JSON.parse(JSON.stringify(v)));
+      for(const [id, v] of Object.entries(meta)) await writeStore(storeKey('meta', id), JSON.parse(JSON.stringify(v)));
+      const cnt = {entries: Object.keys(ent).length, budgets: Object.keys(bud).length, audits: Object.keys(aud).length, forms: Object.keys(forms).length};
+      await writeStore('acct_migrated', Object.assign({at: Date.now(), from: email}, cnt));
+      try{ await U.signOut(oa); }catch(e){}
+      msg(`다 옮겼어요! 내역 ${cnt.entries}건 · 예산 ${cnt.budgets}개 연도 · 감사 ${cnt.audits}건`);
+      setTimeout(()=> location.reload(), 1500);
+    }catch(e){ btn.disabled = false; msg((e && e.message) || String(e)); }
+  };
+}
+
 
 const DEFAULT_INCOME_TAX = [
   {category:'기타수입', item:'이월금'},
@@ -1084,7 +1196,7 @@ const fieldDef=(id,label,type='text')=>({id,label,type});
 function fmtMoney(v){return Number(v||0).toLocaleString('ko-KR')}
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 async function saveOfficeData(){if(!currentUser||!fdb)return;try{await setDoc(doc(fdb,'officeForms','members'),{fullMembers,withdrawnMembers,updatedAt:new Date().toISOString()});await setDoc(doc(fdb,'officeForms','benefits'),{rows:benefitRows,updatedAt:new Date().toISOString()});await setDoc(doc(fdb,'officeForms','sponsors'),{rows:sponsorRows,updatedAt:new Date().toISOString()});await setDoc(doc(fdb,'officeForms','policies'),{rows:policyRows,longRows,policyNote,policySchema:3,updatedAt:new Date().toISOString()});}catch(e){console.error(e);showToast('저장 실패: Firebase 권한 또는 연결을 확인하세요.',true)}}
-async function loadOfficeData(){if(!currentUser||!fdb)return;try{let s=await getDoc(doc(fdb,'officeForms','members'));if(s.exists()){fullMembers=s.data().fullMembers||MEMBER_SEED;withdrawnMembers=s.data().withdrawnMembers||[]}else{fullMembers=MEMBER_SEED;withdrawnMembers=[]}s=await getDoc(doc(fdb,'officeForms','benefits'));benefitRows=s.exists()?s.data().rows||BENEFIT_SEED:BENEFIT_SEED;s=await getDoc(doc(fdb,'officeForms','sponsors'));sponsorRows=s.exists()?(s.data().rows||[]):SPONSOR_SEED.map(r=>({...r}));s=await getDoc(doc(fdb,'officeForms','policies'));policyRows=POLICY_SEED;longRows=LONG_SEED;policyNote=s.exists()?(s.data().policyNote||POLICY_NOTE_SEED):POLICY_NOTE_SEED;renderMembers();renderBenefits();renderSponsors();renderPolicies()}catch(e){console.error('office data load',e)}}
+async function loadOfficeData(){if(!currentUser||!fdb)return;try{let s=await getDoc(doc(fdb,'officeForms','members'));if(s.exists()){fullMembers=s.data().fullMembers||MEMBER_SEED;withdrawnMembers=s.data().withdrawnMembers||[]}else{fullMembers=MEMBER_SEED;withdrawnMembers=[]}s=await getDoc(doc(fdb,'officeForms','benefits'));benefitRows=s.exists()?s.data().rows||BENEFIT_SEED:BENEFIT_SEED;s=await getDoc(doc(fdb,'officeForms','sponsors'));sponsorRows=s.exists()?(s.data().rows||[]):SPONSOR_SEED.map(r=>({...r}));s=await getDoc(doc(fdb,'officeForms','policies'));policyRows=POLICY_SEED;longRows=LONG_SEED;policyNote=s.exists()?(s.data().policyNote||POLICY_NOTE_SEED):POLICY_NOTE_SEED;try{renderMembers()}catch(_){};renderBenefits();renderSponsors();renderPolicies()}catch(e){console.error('office data load',e)}}
 function renderMembers(){
  const cols=['번호','사번','파트/직무','직위','성명','전화번호','주소','E-MAIL','가입일','생년월일'];
  fullMembers.forEach((m,i)=>{m['순번']=Number(m['순번'])||i+1;delete m['등록번호'];delete m['비고']});
@@ -1396,28 +1508,13 @@ async function tryLogin(){
   $('#login-error').style.display='none';
   if(!email || !pw){ $('#login-error').textContent='이메일과 비밀번호를 입력하세요.'; $('#login-error').style.display='block'; return; }
   try{
-    await signInWithEmailAndPassword(auth, email, pw);
-    acctSaveLogin(email, pw);   // SNCT 노동조합(UNION) 안에서는 다음부터 자동 로그인
+    throw new Error('UNION 로그인으로만 열 수 있어요.');
   }catch(e){
     $('#login-error').textContent = '로그인 실패: 이메일 또는 비밀번호가 올바르지 않습니다.';
     $('#login-error').style.display='block';
   }
 }
-$('#btn-login').addEventListener('click', tryLogin);
-$('#login-password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryLogin(); });
 $('#lnk-lock-toggle').addEventListener('click', ()=> signOut(auth));
-// ===== SNCT 노동조합 사이트(UNION 로그인) 안에서 열리면: 회계 로그인을 따로 하지 않음 =====
-//  회계 계정 정보는 UNION만 읽을 수 있는 노동조합 클라우드(unionPrivate/acctLogin)에 한 번 저장해 두고 자동으로 로그인
-function unionCtx(){ try{ const u = window.parent!==window && window.parent.snctUnion; if(u && u.isUnion() && u.db()) return u; }catch(e){} return null; }
-const ACCT_EMBED = !!unionCtx();
-if(ACCT_EMBED) document.documentElement.classList.add('acct-embed');
-async function acctAutoLogin(){
-  const u = unionCtx(); if(!u) return false;
-  try{ const d = await u.db().collection('unionPrivate').doc('acctLogin').get(); const v = d.exists ? d.data() : null;
-    if(v && v.email && v.pw){ await signInWithEmailAndPassword(auth, v.email, v.pw); return true; } }catch(e){}
-  return false;
-}
-async function acctSaveLogin(email, pw){ const u = unionCtx(); if(!u) return; try{ await u.db().collection('unionPrivate').doc('acctLogin').set({email, pw, at: Date.now()}); }catch(e){} }
 // 고정 공통 기능: 모든 앱 버전에서 헤더의 '앱 새로고침' 버튼 제공
 $('#btn-app-refresh').addEventListener('click', ()=> window.location.reload());
 
@@ -2213,8 +2310,6 @@ function detachListeners(){
   entries=[]; budgetsByYear={}; legacyBudget=null;
 }
 async function init(){
-  if(ACCT_EMBED){ try{ await setPersistence(auth, inMemoryPersistence); }catch(e){} $('#acct-wait').style.display = 'flex'; }   // 노동조합 사이트 안: 이 창을 닫으면 회계 로그인도 끝남
-  let autoTried = false;
   initMonthSelect();
   initBudgetYear();
   populateMethodSelect();
@@ -2222,16 +2317,13 @@ async function init(){
   onAuthStateChanged(auth, (user)=>{
     if(user){
       currentUser = user; editMode = true;
-      $('#acct-wait').style.display = 'none';
-      hideLogin(); refreshLockUI();
+      hideLogin(); refreshLockUI(); acctMigrateCheck();
       attachListeners();
       loadOfficeData();
       loadAudit(Number($('#a-year').value), $('#a-quarter').value);
     } else {
       currentUser = null; editMode = false;
       detachListeners();
-      if(ACCT_EMBED && !autoTried){ autoTried = true; acctAutoLogin().then(ok=>{ if(!ok){ $('#acct-wait').style.display = 'none'; showLogin(); } }); return; }
-      $('#acct-wait').style.display = 'none';
       showLogin();
     }
   });
