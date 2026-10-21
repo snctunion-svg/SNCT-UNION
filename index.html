@@ -4777,6 +4777,7 @@ function bindUwCal(){
     }catch(e){ btn.disabled = false; showToast('저장하지 못했어요: ' + (e.message||e)); }
   };
 }
+window.snctUnion = {isUnion: ()=> userRole==='union' || userRole==='all', db: ()=> db};   // 회계(account.html)가 UNION 로그인 상태를 확인하고 노동조합 클라우드를 씀
 function render(){
   renderDeferred = false;
   const el = document.getElementById('content');
@@ -4812,7 +4813,7 @@ function render(){
   else if(isUwView(VIEW)){ el.innerHTML = uwGroupBar(VIEW) + pageUwDoc(VIEW); bindUwDoc(VIEW); bindUwGroupSel(); }
   else if(VIEW==='uwmem'){ el.innerHTML = pageUwMem(); bindUwMem(); }
   else if(VIEW==='uwcal'){ el.innerHTML = pageUwCal(); bindUwCal(); }
-  else if(VIEW==='uwacct') el.innerHTML = `<iframe class="acctFrame" src="account.html" title="회계"></iframe>`;   // 회계(사무국) 프로그램을 그대로 띄움 — 회계 로그인은 따로
+  else if(VIEW==='uwacct'){ if(!el.querySelector(':scope > .acctFrame')) el.innerHTML = `<iframe class="acctFrame" src="account.html" title="회계"></iframe>`; }   // 이미 떠 있으면 그대로 둠(다른 데이터가 바뀌어 화면을 다시 그려도 회계 창은 새로 열지 않음) — 회계(사무국) 프로그램을 그대로 띄움 — 회계 로그인은 따로
   else if(VIEW==='uwform'){ el.innerHTML = pageUwFormView(); bindUwForm(); uwFormFit(); }
   else if(VIEW==='unionhub') el.innerHTML = pageHub(UNION_SHEETS);
   else if(VIEW==='leaderhub') el.innerHTML = pageHub(LEADER_SHEETS);

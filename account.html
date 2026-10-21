@@ -56,6 +56,7 @@ h1,h2,h3{font-family:'Noto Serif KR', Georgia, serif; margin:0;}
 .global-print-btn:hover{background:rgba(255,255,255,.2)}
 .global-print-btn.fit{background:#FFFFFF;color:#9D174D;border-color:#FFFFFF;font-weight:800}
 .app-version{font:600 11px 'Noto Sans KR',sans-serif;color:#FCE7F3;vertical-align:middle;margin-left:5px}
+html.acct-embed #lnk-lock-toggle,html:not(.acct-embed) .login-embed,html.acct-embed .login-normal{display:none !important;}
 #login-overlay{
   position:fixed; inset:0; background:rgba(15,23,42,.72); backdrop-filter:blur(2px);
   display:none; align-items:center; justify-content:center; z-index:9999; padding:20px;
@@ -352,11 +353,12 @@ tbody tr:hover td{background:#FCE7F3;}
     </div>
   </div>
 </div>
+<div id="acct-wait" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-size:15px;color:#64748b;">회계 연결 중…</div>
 <div id="login-overlay">
   <div id="login-box">
     <div class="icon">📒</div>
     <h3>회계</h3>
-    <p>등록된 계정으로 로그인하세요.<br>계정은 관리자가 Firebase 콘솔에서 직접 등록합니다.</p>
+    <p class="login-normal">등록된 계정으로 로그인하세요.<br>계정은 관리자가 Firebase 콘솔에서 직접 등록합니다.</p><p class="login-embed">처음 한 번만 회계 계정으로 로그인해 주세요.<br>다음부터는 UNION 로그인만 하면 자동으로 들어가요.</p>
     <input type="email" id="login-email" placeholder="이메일" autocomplete="username">
     <input type="password" id="login-password" placeholder="비밀번호" autocomplete="current-password" style="margin-top:8px;">
     <button class="btn btn-primary" id="btn-login" style="margin-top:12px;">로그인</button>
@@ -516,7 +518,7 @@ const SEED_ENTRIES = [{"date": "2026-06-01", "type": "수입", "category": "기�
    (Firebase 콘솔 > 프로젝트 설정 > 내 앱 > SDK 설정 및 구성 에서 복사)
 ==================================================================== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, inMemoryPersistence }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, setDoc, getDoc, getDocs, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
@@ -1395,6 +1397,7 @@ async function tryLogin(){
   if(!email || !pw){ $('#login-error').textContent='이메일과 비밀번호를 입력하세요.'; $('#login-error').style.display='block'; return; }
   try{
     await signInWithEmailAndPassword(auth, email, pw);
+    acctSaveLogin(email, pw);   // SNCT 노동조합(UNION) 안에서는 다음부터 자동 로그인
   }catch(e){
     $('#login-error').textContent = '로그인 실패: 이메일 또는 비밀번호가 올바르지 않습니다.';
     $('#login-error').style.display='block';
@@ -1403,6 +1406,18 @@ async function tryLogin(){
 $('#btn-login').addEventListener('click', tryLogin);
 $('#login-password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryLogin(); });
 $('#lnk-lock-toggle').addEventListener('click', ()=> signOut(auth));
+// ===== SNCT 노동조합 사이트(UNION 로그인) 안에서 열리면: 회계 로그인을 따로 하지 않음 =====
+//  회계 계정 정보는 UNION만 읽을 수 있는 노동조합 클라우드(unionPrivate/acctLogin)에 한 번 저장해 두고 자동으로 로그인
+function unionCtx(){ try{ const u = window.parent!==window && window.parent.snctUnion; if(u && u.isUnion() && u.db()) return u; }catch(e){} return null; }
+const ACCT_EMBED = !!unionCtx();
+if(ACCT_EMBED) document.documentElement.classList.add('acct-embed');
+async function acctAutoLogin(){
+  const u = unionCtx(); if(!u) return false;
+  try{ const d = await u.db().collection('unionPrivate').doc('acctLogin').get(); const v = d.exists ? d.data() : null;
+    if(v && v.email && v.pw){ await signInWithEmailAndPassword(auth, v.email, v.pw); return true; } }catch(e){}
+  return false;
+}
+async function acctSaveLogin(email, pw){ const u = unionCtx(); if(!u) return; try{ await u.db().collection('unionPrivate').doc('acctLogin').set({email, pw, at: Date.now()}); }catch(e){} }
 // 고정 공통 기능: 모든 앱 버전에서 헤더의 '앱 새로고침' 버튼 제공
 $('#btn-app-refresh').addEventListener('click', ()=> window.location.reload());
 
@@ -2198,6 +2213,8 @@ function detachListeners(){
   entries=[]; budgetsByYear={}; legacyBudget=null;
 }
 async function init(){
+  if(ACCT_EMBED){ try{ await setPersistence(auth, inMemoryPersistence); }catch(e){} $('#acct-wait').style.display = 'flex'; }   // 노동조합 사이트 안: 이 창을 닫으면 회계 로그인도 끝남
+  let autoTried = false;
   initMonthSelect();
   initBudgetYear();
   populateMethodSelect();
@@ -2205,6 +2222,7 @@ async function init(){
   onAuthStateChanged(auth, (user)=>{
     if(user){
       currentUser = user; editMode = true;
+      $('#acct-wait').style.display = 'none';
       hideLogin(); refreshLockUI();
       attachListeners();
       loadOfficeData();
@@ -2212,6 +2230,8 @@ async function init(){
     } else {
       currentUser = null; editMode = false;
       detachListeners();
+      if(ACCT_EMBED && !autoTried){ autoTried = true; acctAutoLogin().then(ok=>{ if(!ok){ $('#acct-wait').style.display = 'none'; showLogin(); } }); return; }
+      $('#acct-wait').style.display = 'none';
       showLogin();
     }
   });
