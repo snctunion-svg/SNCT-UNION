@@ -1,12 +1,14 @@
 {
-  "name": "SNCT UNION",
-  "short_name": "SNCT UNION",
+  "name": "SNCT 노동조합",
+  "short_name": "SNCT 노동조합",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#db2777",
   "theme_color": "#4c1d95",
   "icons": [
-    { "src": "icon-snct-192.png", "sizes": "192x192", "type": "image/png" }
+    { "src": "icon-snct-192.png?v=2", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-snct-512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-snct-maskable-512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
