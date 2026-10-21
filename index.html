@@ -1485,8 +1485,7 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-direction:column;}
 .acctFrame{border:0;width:100%;flex:1 1 auto;min-height:0;display:block;background:#f1f5f9;}
 /* ===== UNION > 캘린더 ===== */
-.navLock{font-size:11px;margin-left:auto;opacity:.7;}
-body.isUnion .navLock{display:none;}
+body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용: UNION 전용 메뉴는 안 보임(로그인은 위쪽 [UNION 로그인]) */
 .calTop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
 .calNav{display:flex;align-items:center;gap:4px;}
 .calNav button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;width:36px;height:36px;font-size:18px;line-height:1;cursor:pointer;}
@@ -4538,7 +4537,6 @@ function bindUnionGate(){
 
 /* ========================= 렌더 라우터 ========================= */
 function setView(v){
-  if(SITE_UNION && v==='unionhub' && !(userRole==='union' || userRole==='all')) v = 'payroll';   // 로그인 전: UNION 로그인 화면
   if(v==='leaderhub' || v==='unionhub' || v==='workhub'){   // 조장관리·UNION·UNION WORK 제목: 화면을 바꾸지 않고 시트 고르기 팝업
     if(authResolved && !roleCanSee(v)) return;
     document.getElementById('nav').classList.remove('open');
@@ -4788,7 +4786,10 @@ function render(){
   renderDeferred = false;
   const el = document.getElementById('content');
   el.classList.toggle('acctMode', VIEW==='uwacct' && (userRole==='union' || userRole==='all'));
-  if(SITE_UNION && !(userRole==='union' || userRole==='all') && !isUnionPublicView(VIEW)){ el.innerHTML = pageUnionGate(); bindUnionGate(); return; }   // 캘린더·규약&규정·취업&업무는 누구나(보기만), 조합원 명부·양식은 UNION 비번   // SNCT UNION: UNION 로그인 전에는 아무것도 안 보임
+  if(SITE_UNION && !(userRole==='union' || userRole==='all') && !isUnionPublicView(VIEW)){
+    if(authResolved || demoMode){ VIEW = 'uwcal'; el.classList.remove('acctMode'); document.querySelectorAll('nav#nav a').forEach(a=> a.classList.toggle('on', a.dataset.view==='uwcal')); }   // 보기 전용: UNION 전용 화면 대신 캘린더
+    else { el.innerHTML = pageUnionGate(); bindUnionGate(); return; }   // 로그인 확인 중
+  }   // 캘린더·규약&규정·취업&업무는 누구나(보기만), 조합원 명부·양식은 UNION 비번   // SNCT UNION: UNION 로그인 전에는 아무것도 안 보임
   ensureForView();
   if(authResolved){ canEdit = roleCanEdit(VIEW); if(leaderBlocksView()) canEdit = false; }   // 조별 조장: 다른 조는 보기만
   if(VIEW==='input' || VIEW==='input2') el.innerHTML = pageInput();
@@ -11559,8 +11560,8 @@ document.addEventListener('change', (e)=>{
 
 /* ========================= 내비게이션/모바일 ========================= */
 if(SITE_UNION){   // SNCT UNION: 메뉴는 조합원 명부·양식·규약&규정·취업&업무만
-  document.getElementById('nav').innerHTML = '<div class="navttl">UNION</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}"><span class="ic">${ic}</span>${l}${isUnionPublicView(id) || id==='uwregs' || id==='uwjobs' ? '' : '<span class="navLock" title="UNION 전용"> 🔒</span>'}</a>`).join('')
-    + '<a class="navttl navUnion" data-view="unionhub" style="margin-top:14px;">UNION WORK <span class="navUnionArr">›</span><span class="navLock" title="UNION 전용"> 🔒</span></a>';   // 누르면 팝업에서 장비 시급·장비 급여 관리… 고르기   // UNION WORK는 UNION 비번   // 누구나 메뉴가 보임 — 🔒 메뉴는 누르면 UNION 로그인
+  document.getElementById('nav').innerHTML = '<div class="navttl">UNION</div>' + WORK_SHEETS.map(([id,ic,l])=> `<a data-view="${id}"${isUnionPublicView(id) || id==='uwregs' || id==='uwjobs' ? '' : ' class="navPriv"'}><span class="ic">${ic}</span>${l}</a>`).join('')
+    + '<a class="navttl navUnion navPriv" data-view="unionhub" style="margin-top:14px;">UNION WORK <span class="navUnionArr">›</span></a>';   // 누르면 팝업에서 장비 시급·장비 급여 관리… 고르기   // UNION WORK는 UNION 비번   // 누구나 메뉴가 보임 — 🔒 메뉴는 누르면 UNION 로그인
   const h1 = document.querySelector('header.app h1'); if(h1 && !h1.querySelector('.appLogo')) h1.textContent = 'SNCT 노동조합';   // 로고는 그대로 둠
 } else { const us = document.getElementById('navUnionSite'); if(us) us.href = UNION_SITE_URL; }
 document.querySelectorAll('nav#nav a').forEach(a=>{
