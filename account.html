@@ -562,7 +562,7 @@ async function readStore(k){ return parseStore(await UREF(k).get()); }
 async function writeStore(k, v){
   const json = JSON.stringify(v);
   if(json.length > 950000) throw new Error('회계 데이터가 너무 커서 저장하지 못했어요(1MB 한도).');
-  await UREF(k).set({json, at: Date.now()});
+  await UNION.setJson('unionPrivate', k, json);   // 저장할 객체는 노동조합 사이트 쪽에서 만들어야 함(다른 창에서 만든 객체는 Firebase가 거부)
 }
 // 여러 문서 묶음(내역·예산)은 바뀐 것을 모아서 한 번에 저장(파일 업로드처럼 많이 넣어도 빠르게)
 const pendingQ = {};
@@ -596,7 +596,7 @@ async function updateDoc(ref, data){
 }
 async function deleteDoc(ref){
   if(MAP_COLS[ref.c]){ mutate(MAP_COLS[ref.c], cur=>{ delete cur[ref.id]; }).catch(()=>{}); return; }
-  await UREF(storeKey(ref.c, ref.id)).set({json: 'null', at: Date.now()});
+  await writeStore(storeKey(ref.c, ref.id), null);
 }
 async function getDoc(ref){
   if(MAP_COLS[ref.c]){ const m = (await readStore(MAP_COLS[ref.c])) || {}; return docSnap(ref.id, m[ref.id]); }
@@ -2317,7 +2317,7 @@ async function init(){
   onAuthStateChanged(auth, (user)=>{
     if(user){
       currentUser = user; editMode = true;
-      hideLogin(); refreshLockUI(); acctMigrateCheck();
+      hideLogin(); refreshLockUI();
       attachListeners();
       loadOfficeData();
       loadAudit(Number($('#a-year').value), $('#a-quarter').value);

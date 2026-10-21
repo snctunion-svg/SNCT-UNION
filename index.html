@@ -4777,7 +4777,8 @@ function bindUwCal(){
     }catch(e){ btn.disabled = false; showToast('저장하지 못했어요: ' + (e.message||e)); }
   };
 }
-window.snctUnion = {isUnion: ()=> userRole==='union' || userRole==='all', db: ()=> db};   // 회계(account.html)가 UNION 로그인 상태를 확인하고 노동조합 클라우드를 씀
+window.snctUnion = {isUnion: ()=> userRole==='union' || userRole==='all', db: ()=> db,
+  setJson: (c, id, json)=> db.collection(String(c)).doc(String(id)).set({json: String(json), at: Date.now()})};   // 회계 저장: 객체를 이 창에서 만들어야 Firebase가 받아 줌   // 회계(account.html)가 UNION 로그인 상태를 확인하고 노동조합 클라우드를 씀
 function render(){
   renderDeferred = false;
   const el = document.getElementById('content');
