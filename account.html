@@ -383,7 +383,6 @@ tbody tr:hover td{background:#FCE7F3;}
     <button type="button" class="btn btn-primary" id="mg-go" style="margin-top:12px;width:100%;">옮기기</button>
     <div id="mg-msg" style="font-size:12.5px;margin-top:10px;white-space:pre-line;"></div>
     <button type="button" class="btn btn-outline" id="mg-close" style="margin-top:14px;width:100%;" onclick="document.getElementById('acct-migrate').style.display='none'">닫기</button>
-    <button type="button" id="mg-skip" style="margin-top:10px;background:none;border:0;color:#64748b;font-size:12px;text-decoration:underline;cursor:pointer;">이미 다 옮겼어요 (이 단추 없애기)</button>
   </div>
 </div>
 <div id="login-overlay">
@@ -641,11 +640,11 @@ async function acctSeedOnce(){
 // ----- 예전 회계 Firebase → 노동조합 클라우드로 한 번 옮기기 -----
 async function acctMigrateCheck(){
   if(!unionOk()) return;
-  try{ const st = await readStore('acct_migrated'); if(st) return; }catch(e){ return; }
+  try{ const st = await readStore('acct_migrated'); if(st && st.from) return; }catch(e){ return; }   // 실제로 옮긴 적이 있을 때만 단추 숨김('이미 옮겼어요'로 숨긴 것은 다시 보임)
   const box = document.getElementById('acct-migrate'), ob = document.getElementById('btn-acct-import');
   ob.style.display = ''; ob.onclick = ()=>{ box.style.display = 'flex'; };   // 창은 단추를 눌렀을 때만 뜸
   const msg = t=>{ document.getElementById('mg-msg').textContent = t; };
-  document.getElementById('mg-skip').onclick = async ()=>{
+  if(document.getElementById('mg-skip')) document.getElementById('mg-skip').onclick = async ()=>{
     if(!confirm('[예전 데이터 가져오기] 단추를 없앨까요?')) return;
     await writeStore('acct_migrated', {skipped: true, at: Date.now()}); box.style.display = 'none'; ob.style.display = 'none';
   };
