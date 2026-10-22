@@ -1554,8 +1554,9 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calPopBtns .spacer{flex:1 1 auto;}
 @media (max-width:700px){
   .calCell{min-height:max(64px, calc((100dvh - 330px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / var(--calRows,5)));padding:3px 2px 4px;}   /* 휴대폰: 달력이 화면 아래까지 차게 */
-  .calEv{display:none;} .calMore{display:none;}
-  .calDots{display:flex;}
+  .calGrid .calEv{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;word-break:break-all;font-size:10px;line-height:1.2;padding:0 1px;}   /* 휴대폰도 * 일정 글자(2줄까지) */
+  .calMore{font-size:9.5px;padding-left:1px;}
+  .calDots{display:none;}
   .calHol{font-size:9px;text-align:center;}
   .calNumRow{flex-direction:column;gap:0;}
   .calNum{font-size:12.5px;}
@@ -4713,7 +4714,7 @@ function pageUwCal(){
     const cls = ['calCell', w===0 ? 'sun' : w===6 ? 'sat' : '', hol ? 'hol' : '', ds===today ? 'today' : '', ds===calSel ? 'sel' : ''].filter(Boolean).join(' ');
     cells.push(`<button type="button" class="${cls}" data-cal-day="${ds}" aria-label="${esc(calDateLabel(ds))} 일정 ${ev.length}개">
       <span class="calNumRow"><span class="calNum">${d}</span>${hol ? `<span class="calHol">${esc(hol)}</span>` : ''}</span>
-      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen">${e.t ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}
+      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen">* ${e.t ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}
       ${ev.length > 3 ? `<span class="calMore">+${ev.length-3}개 더</span>` : ''}
       ${ev.length ? `<span class="calDots">${ev.slice(0,4).map(()=> `<i class="calD-gen"></i>`).join('')}</span>` : ''}
     </button>`);
