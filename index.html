@@ -1205,6 +1205,8 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 .uwHead{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:12px;background:#fdf2f8;border:1px solid #fbcfe8;margin-bottom:10px;}
 .uwHead b{font-size:20px;color:#9d174d;letter-spacing:.5px;}
 .uwHead span{font-size:12px;color:var(--text-muted);}
+.uwSubIn{font:inherit;font-size:12.5px;color:var(--text-muted);background:transparent;border:1px dashed transparent;border-radius:6px;padding:2px 6px;margin-left:-6px;width:100%;max-width:520px;}
+.uwSubIn:hover,.uwSubIn:focus{border-color:#f9a8d4;background:#fff;outline:none;color:var(--text);}
 .uwBar{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;padding:8px 0;background:var(--bg);}
 .uwBar input{flex:1 1 200px;min-width:0;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--surface);color:var(--text);}
 .uwBar select{flex:0 1 220px;min-width:0;max-width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 8px;font:inherit;font-size:14px;background:var(--surface);color:var(--text);}
@@ -4729,7 +4731,7 @@ function pageUwCal(){
     </div></div>` : '';
   return `
   <h2 class="pgttl">캘린더</h2>
-  <div class="uwHead"><b>캘린더</b><span>선광신컨테이너터미널㈜ 노동조합 · 월별 일정${canEdit ? '' : ' · 보기 전용'}</span></div>
+  <div class="uwHead"><b>캘린더</b></div>
   ${calErr ? `<div class="note">${esc(calErr)}</div>` : ''}
   <div class="calTop">
     <div class="calNav"><button type="button" id="calPrev" aria-label="이전 달">‹</button><span class="calYm">${y}년 ${m}월</span><button type="button" id="calNext" aria-label="다음 달">›</button></div>
@@ -9647,6 +9649,17 @@ function uwArtHtml(b, q){
   b.l.forEach(([lv, t])=>{ if(lv===9){ pre.push(uwEsc(t, q)); return; } flush(); out += `<p class="uwL uwL${lv==='p'?0:lv}">${uwEsc(t, q)}</p>`; });
   flush(); return out;
 }
+// 규정 제목 아래 기록(제정·개정): 회사 이름·'PDF에서 가져옴'·'정리본'은 빼고 보여 줌. UNION은 바로 적어서 저장(수기)
+function uwSubClean(t){ return String(t||'').replace(/선광신컨테이너터미널\s*(\(주\)|㈜|（주）)?(\s*노동조합)?/g, '').replace(/PDF에서 가져옴|\d{4}년\s*정리본/g, '').split('·').map(x=> x.trim()).filter(Boolean).join(' · '); }
+async function uwSaveSub(id, val){
+  const base = uwDoc(id); if(!base) return;
+  const d = {title: base.title, sub: val, b: base.b, at: Date.now()};
+  try{
+    if(UW_PRIV[id]) await uwSavePriv(id, d);
+    else { const rec = {json: JSON.stringify({title:d.title, sub:d.sub, b:d.b}), at: d.at}; uwOverride = Object.assign({}, uwOverride, {[id]: rec}); if(db) await db.doc('meta/uwDocs').set({[id]: rec}, {merge:true}); }
+    showToast('기록을 저장했어요.');
+  }catch(err){ showToast(saveErrMsg('저장에 실패했습니다.', err)); }
+}
 function uwHeadKind(b){ return b.pt!=null ? 'pt' : b.rg!=null ? 'rg' : b.chh!=null ? 'ch' : ''; }
 const UW_HEAD_RANK = {pt:1, rg:2, ch:3};
 function pageUwDoc(id){
@@ -9656,7 +9669,7 @@ function pageUwDoc(id){
     if(priv) uwLoadPriv(id);
     const err = uwPrivErr[id];
     return `<h2 class="pgttl">${esc(UW_PRIV[id].title)}</h2>
-      <div class="uwHead"><b>${esc(UW_PRIV[id].title)}</b><span>선광신컨테이너터미널(주)</span></div>
+      <div class="uwHead"><b>${esc(UW_PRIV[id].title)}</b></div>
       ${err && err!=='none' ? `<div class="note">${esc(err)}</div>` : err==='none' ? `<div class="empty">아직 규정 자료가 없어요. [📥 PDF로 가져오기]로 업무규정·취업규칙 PDF(2026 정리본)를 올려 주세요. 두 파일을 한꺼번에 골라도 돼요.</div>` : '<div class="hint">불러오는 중…</div>'}
       <div class="uwTools"><label class="btn sm editor-only uwmImp">📥 PDF로 가져오기<input type="file" id="uwRulesFile" accept=".pdf,application/pdf,.json,application/json" multiple hidden></label></div>`;
   }
@@ -9673,7 +9686,7 @@ function pageUwDoc(id){
   });
   return `
   <h2 class="pgttl">${esc(d.title)}</h2>
-  <div class="uwHead"><b>${esc(d.title)}</b><span>${esc(d.sub)}</span></div>
+  <div class="uwHead"><b>${esc(d.title)}</b>${canEdit ? `<input type="text" class="uwSubIn" id="uwSubIn" value="${esc(uwSubClean(d.sub))}" placeholder="제정·개정 기록을 적어 주세요 (예: 2015.06.14 제정 · 2024.06.28 개정)" title="고친 뒤 Enter 또는 다른 곳을 누르면 저장">` : (uwSubClean(d.sub) ? `<span>${esc(uwSubClean(d.sub))}</span>` : '')}</div>
   <div class="uwBar">
     <input type="search" id="uwSearch" value="${esc(q)}" placeholder="조문 검색 (예: 대의원, 임기, 회의)" autocomplete="off">
     <select id="uwToc" aria-label="목차"><option value="">목차로 이동</option>${toc}</select>
@@ -9701,6 +9714,7 @@ function uwApplyFilter(id){
   if(c) c.textContent = ql ? (shown ? `'${q}' 들어간 조문 ${shown}개` : `'${q}' 들어간 조문이 없어요.`) : '';
 }
 function bindUwDoc(id){
+  const si = document.getElementById('uwSubIn'); if(si){ const v0 = si.value; si.onkeydown = e=>{ if(e.key==='Enter') si.blur(); }; si.onchange = ()=>{ const v = si.value.trim(); if(v!==v0) uwSaveSub(id, v); }; }
   const rf = document.getElementById('uwRulesFile'); if(rf) rf.onchange = ()=>{ const fs = Array.from(rf.files || []); rf.value = ''; if(fs.length) uwImportRules(fs); };
   if(!uwDoc(id)) return;
   if(uwEdit===id){ bindUwEdit(id); return; }
@@ -9790,7 +9804,7 @@ function uwPrint(id){
   const org = id==='uwlmc' ? '선광신컨테이너터미널(주) 노사협의회' : UW_PRIV[id] ? '선광신컨테이너터미널(주)' : '선광신컨테이너터미널(주) 노동조합';
   let box = document.getElementById('uwPrint'); if(box) box.remove();
   box = document.createElement('div'); box.id = 'uwPrint';
-  box.innerHTML = `<div class="uwPCover"><div class="uwPTitle">${esc(d.title)}</div><div class="uwPSub">${esc(d.sub)}</div></div>${body}<div class="uwPEnd">${esc(org)}</div>`;
+  box.innerHTML = `<div class="uwPCover"><div class="uwPTitle">${esc(d.title)}</div><div class="uwPSub">${esc(uwSubClean(d.sub))}</div></div>${body}<div class="uwPEnd">${esc(org)}</div>`;
   document.body.appendChild(box);
   const old = document.title; document.title = `${d.title}`;   // PDF로 저장할 때 파일 이름
   document.body.classList.add('printing-uw');
@@ -9904,7 +9918,7 @@ function pageUwFormView(){
   subscribeUwMem();
   const cur = uwMemList('cur');
   return `<h2 class="pgttl">양식</h2>
-  <div class="uwHead"><b>양식</b><span>근무유공자 추천서 · 공적조서 · 노동절 장학생 · 경조사비 지급기준 · 정기 통보서 — 골라서 채우고 출력</span></div>
+  <div class="uwHead"><b>양식</b></div>
   ${pageUwForm(cur)}`;
 }
 function pageUwMem(){
@@ -9933,11 +9947,11 @@ function pageUwMem(){
   const vtabs = `<div class="uwmVTabs"><button type="button" class="uwmVTab${uwMemView==='list' ? ' on' : ''}" data-uwm-view="list">👥 명부 ${cur.length}명</button><button type="button" class="uwmVTab${uwMemView==='award' ? ' on' : ''}" data-uwm-view="award">🏅 조합원 표창 ${aw.found.length + aw.prize.length}건</button></div>`;
   if(uwMemView==='award') return `
   <h2 class="pgttl">조합원 명부</h2>
-  <div class="uwHead"><b>조합원 표창</b><span>선광신컨테이너터미널㈜ 노동조합 · 조합원 포상 내역${uwAwardDoc && uwAwardDoc.at ? ' · ' + esc(new Date(uwAwardDoc.at).toLocaleDateString('ko-KR')) + ' 저장' : ''}</span></div>
+  <div class="uwHead"><b>조합원 표창</b></div>
   ${vtabs}${pageUwAward(cur)}`;
   return `
   <h2 class="pgttl">조합원 명부</h2>
-  <div class="uwHead"><b>조합원 명부</b><span>선광신컨테이너터미널㈜ 노동조합${at ? ' · ' + esc(at) + ' 저장' : ''}</span></div>
+  <div class="uwHead"><b>조합원 명부</b></div>
   ${uwMemErr ? `<div class="note">${esc(uwMemErr)}</div>` : ''}
   ${!loaded && !uwMemErr ? '<div class="hint">불러오는 중…</div>' : ''}
   ${vtabs}
