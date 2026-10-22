@@ -9690,7 +9690,7 @@ function pageUwDoc(id){
   });
   return `
   <h2 class="pgttl">${esc(d.title)}</h2>
-  <div class="uwHead"><div class="uwTitleRow"><b>${esc(d.title)}</b>${canEdit ? `<input type="text" class="uwSubIn" id="uwSubIn" value="${esc(uwSubClean(d.sub))}" placeholder="제정·개정 (예: 2015.06.14 제정 · 2024.06.28 개정)" title="적은 뒤 Enter 또는 다른 곳을 누르면 저장">` : (uwSubClean(d.sub) ? `<span class="uwSubTxt">${esc(uwSubClean(d.sub))}</span>` : '')}</div></div>
+  <div class="uwHead"><div class="uwTitleRow"><b>${esc(d.title)}</b>${priv ? '' : canEdit ? `<input type="text" class="uwSubIn" id="uwSubIn" value="${esc(uwSubClean(d.sub))}" placeholder="제정·개정 (예: 2015.06.14 제정 · 2024.06.28 개정)" title="적은 뒤 Enter 또는 다른 곳을 누르면 저장">` : (uwSubClean(d.sub) ? `<span class="uwSubTxt">${esc(uwSubClean(d.sub))}</span>` : '')}</div></div>
   <div class="uwBar">
     <input type="search" id="uwSearch" value="${esc(q)}" placeholder="조문 검색 (예: 대의원, 임기, 회의)" autocomplete="off">
     <select id="uwToc" aria-label="목차"><option value="">목차로 이동</option>${toc}</select>
