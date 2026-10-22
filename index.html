@@ -1205,8 +1205,12 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 .uwHead{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border-radius:12px;background:#fdf2f8;border:1px solid #fbcfe8;margin-bottom:10px;}
 .uwHead b{font-size:20px;color:#9d174d;letter-spacing:.5px;}
 .uwHead span{font-size:12px;color:var(--text-muted);}
-.uwSubIn{font:inherit;font-size:12.5px;color:var(--text-muted);background:transparent;border:1px dashed transparent;border-radius:6px;padding:2px 6px;margin-left:-6px;width:100%;max-width:520px;}
-.uwSubIn:hover,.uwSubIn:focus{border-color:#f9a8d4;background:#fff;outline:none;color:var(--text);}
+.uwTitleRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
+.uwSubIn{font:inherit;font-size:13px;color:var(--text);background:#fff;border:1px solid #fbcfe8;border-radius:8px;padding:6px 10px;flex:1 1 220px;min-width:0;max-width:420px;}
+.uwSubIn:focus{border-color:#ec4899;outline:none;box-shadow:0 0 0 2px #fce7f3;}
+.uwSubIn::placeholder{color:#c08aa5;}
+.uwTitleRow .uwSubTxt{font-size:13px;color:var(--text-muted);}
+@media (max-width:520px){ .uwTitleRow{gap:8px;} .uwSubIn{font-size:16px;padding:5px 8px;flex:1 1 120px;} }   /* 휴대폰에서도 제목 옆에 */
 .uwBar{position:sticky;top:0;z-index:5;display:flex;gap:8px;flex-wrap:wrap;padding:8px 0;background:var(--bg);}
 .uwBar input{flex:1 1 200px;min-width:0;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--surface);color:var(--text);}
 .uwBar select{flex:0 1 220px;min-width:0;max-width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 8px;font:inherit;font-size:14px;background:var(--surface);color:var(--text);}
@@ -9686,7 +9690,7 @@ function pageUwDoc(id){
   });
   return `
   <h2 class="pgttl">${esc(d.title)}</h2>
-  <div class="uwHead"><b>${esc(d.title)}</b>${canEdit ? `<input type="text" class="uwSubIn" id="uwSubIn" value="${esc(uwSubClean(d.sub))}" placeholder="제정·개정 기록을 적어 주세요 (예: 2015.06.14 제정 · 2024.06.28 개정)" title="고친 뒤 Enter 또는 다른 곳을 누르면 저장">` : (uwSubClean(d.sub) ? `<span>${esc(uwSubClean(d.sub))}</span>` : '')}</div>
+  <div class="uwHead"><div class="uwTitleRow"><b>${esc(d.title)}</b>${canEdit ? `<input type="text" class="uwSubIn" id="uwSubIn" value="${esc(uwSubClean(d.sub))}" placeholder="제정·개정 (예: 2015.06.14 제정 · 2024.06.28 개정)" title="적은 뒤 Enter 또는 다른 곳을 누르면 저장">` : (uwSubClean(d.sub) ? `<span class="uwSubTxt">${esc(uwSubClean(d.sub))}</span>` : '')}</div></div>
   <div class="uwBar">
     <input type="search" id="uwSearch" value="${esc(q)}" placeholder="조문 검색 (예: 대의원, 임기, 회의)" autocomplete="off">
     <select id="uwToc" aria-label="목차"><option value="">목차로 이동</option>${toc}</select>
