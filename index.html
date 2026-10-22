@@ -1498,7 +1498,7 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);gap:1px;}
 .calDow{background:var(--surface);text-align:center;font-size:12px;font-weight:800;padding:7px 0;color:var(--text-muted);}
 .calDow.sun{color:#dc2626;} .calDow.sat{color:#2563eb;}
-.calCell{background:var(--surface);min-height:104px;padding:5px 5px 6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0;position:relative;text-align:left;border:0;font:inherit;color:inherit;}
+.calCell{background:var(--surface);min-height:max(104px, calc((100dvh - 330px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / var(--calRows,5)));padding:5px 5px 6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0;position:relative;text-align:left;border:0;font:inherit;color:inherit;}
 .calCell:hover{background:var(--btn-soft);}
 .calCell.out{background:var(--bg);cursor:default;}
 .calCell.out .calNum{opacity:.35;}
@@ -1547,7 +1547,7 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calPopBtns{display:flex;gap:8px;padding:0 12px 14px;flex-wrap:wrap;}
 .calPopBtns .spacer{flex:1 1 auto;}
 @media (max-width:700px){
-  .calCell{min-height:64px;padding:3px 2px 4px;}
+  .calCell{min-height:max(64px, calc((100dvh - 330px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / var(--calRows,5)));padding:3px 2px 4px;}   /* 휴대폰: 달력이 화면 아래까지 차게 */
   .calEv{display:none;} .calMore{display:none;}
   .calDots{display:flex;}
   .calHol{font-size:9px;text-align:center;}
@@ -4739,7 +4739,7 @@ function pageUwCal(){
     <span class="spacer"></span>
     <button type="button" class="btn sm editor-only" id="calAdd">＋ 일정 추가</button>
   </div>
-  <div class="calGrid">${'일월화수목금토'.split('').map((w,i)=> `<div class="calDow${i===0 ? ' sun' : i===6 ? ' sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
+  <div class="calGrid" style="--calRows:${cells.length/7}">${'일월화수목금토'.split('').map((w,i)=> `<div class="calDow${i===0 ? ' sun' : i===6 ? ' sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
   ${dayPop}${pop}`;
 }
 function calOpen(ev){ if(!ev && !canEdit) return; calEdit = ev ? Object.assign({}, ev) : {d: calDayPop || calSel, t:'', title:'', memo:'', c:'gen'}; calEdit.back = calDayPop; calDayPop = ''; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
