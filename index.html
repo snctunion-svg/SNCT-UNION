@@ -1490,6 +1490,31 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 /* ===== UNION > 회계(account.html을 화면 가득) ===== */
 main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-direction:column;}
 .acctFrame{border:0;width:100%;flex:1 1 auto;min-height:0;display:block;background:#f1f5f9;}
+/* 양식: 공고·신청서(임원선거 서식 · 공고·증명 서식) */
+.uwfGg{display:flex;flex-direction:column;}
+.uwfGgT{text-align:center;font-size:24pt;font-weight:900;letter-spacing:4pt;margin:6mm 0 7mm;}
+.uwfGgBody{font-size:12pt;line-height:1.72;min-height:120mm;white-space:pre-wrap;}
+.uwfGgDate{text-align:center;font-size:13pt;margin-top:8mm;}
+.uwfGgOrg{text-align:center;font-size:15pt;font-weight:800;margin-top:7mm;}
+.uwfGgSign{text-align:center;font-size:15pt;font-weight:800;margin-top:3mm;}
+.uwfRdOrg{text-align:center;font-size:14pt;font-weight:700;margin-top:8mm;}
+.uwfRdT{font-size:20pt;margin:2mm 0 6mm;}
+.uwfRdBody{font-size:11pt;line-height:1.62;min-height:0;}
+.uwfRdSigns{margin:6mm auto 0;font-size:13pt;line-height:2.1;text-align:center;}
+.uwfApT{margin-bottom:0;} .uwfApT td{height:9mm;}
+.uwfApTitle{text-align:center !important;font-size:19pt;font-weight:900;letter-spacing:2pt;}
+.uwfApSub{font-size:13pt;font-weight:700;letter-spacing:1pt;margin-top:1mm;}
+.uwfApvH{font-size:10pt;} .uwfApSign td{height:17mm;}
+.uwfApR th,.uwfApR td{height:11mm;font-size:11.5pt;} .uwfApR{margin-top:-1px;}
+.uwfApTxt{font-size:12.5pt;line-height:1.9;margin:10mm 2mm 12mm;text-indent:1em;}
+.uwfApDate{text-align:center;font-size:13pt;margin:0 0 9mm;}
+.uwfApWho{text-align:right;font-size:13pt;margin:0 8mm 16mm 0;}
+.uwfApName{display:inline-block;min-width:30mm;text-align:center;}
+.uwfApTo{text-align:center;font-size:15pt;font-weight:800;}
+.uwfRecom .uwfApTxt{margin:5mm 2mm 4mm;} .uwfRecom .uwfApR th,.uwfRecom .uwfApR td{height:8.5mm;}
+.uwfRcT{text-align:center;font-size:13pt;font-weight:800;margin:0 0 2mm;}
+.uwfRcL th,.uwfRcL td{height:6.6mm;padding:.6mm 1mm;font-size:10pt;}
+.uwfRecom .uwfApDate{margin:2mm 0 3mm;} .uwfRecom .uwfApTo{font-size:13pt;}
 /* ===== UNION > 협의회 공문서 ===== */
 .ofcTop{display:flex;align-items:center;gap:8px;margin:0 0 10px;}
 .ofcTop .spacer{flex:1 1 auto;}
@@ -10309,7 +10334,159 @@ const UW_GS = {
   l: [['근무유공자','400','1일',''],['10년 근속','500','2일',''],['15년 근속','700','3일',''],['20년 근속','1,000','4일',''],['25년 근속','1,300','5일',''],['30년 근속','1,500','7일',''],['35년 근속','2,000','7일',''],['25년 이상 근속 후 정년 퇴직','(30년 이상)3,000','-','']],
   n1:'*상기 경조휴가는 연속 사용하여야 하고, 경조휴가 기간 中 휴일은 경조휴가 기간에 포함한다.', n2:'*화환은 행사 초대장 제출 시 지급한다.'
 };
+// ===== 양식: 임원선거 서식 · 공고·증명 서식 (보내 준 한글 파일 2개). 쪽을 골라 칸을 눌러 고치고 출력 =====
+const UWF_SETS = {
+  elect: {label:'🗳️ 임원선거 서식', pages:[['notice','임원선거 공고'],['cand','입후보자 등록 공고'],['apply','후보자등록신청서'],['recom','입후보추천서'],['watch','투표참관인신청서'],['record','임원 선거록']]},
+  notc:  {label:'📋 공고·증명 서식', pages:[['comm','선거관리위원회 구성 공고'],['gm','정기총회 공고'],['memcert','조합원증명원'],['dues','의무금납부확인서']]}
+};
+const UWF_UN = '선광신컨테이너터미널(주) 노동조합', UWF_EC = UWF_UN + ' 선거관리위원회';
+function uwfSetDefault(kind){
+  const chief = (uwFormChief() || '오원일').replace(/\s/g,'').split('').join(' ');
+  const v = {pos:'위원장', name:'', part:'', emp:'', hire:'', addr:'', join:'', tel:'', period:'', fDate:'20    년      월      일', fSign:''};
+  if(kind==='elect') Object.assign(v, {
+    noticeBody:` 선광신컨테이너터미널(주) 노동조합 제 5 대 임원선거와 관련하여 아래와 같이 공고합니다.
+
+                              - 아   래 -
+
+1. 선거일 (선거관리규정 제22조, 제23조)
+  가. 선거구분 : 위원장, 부위원장, 사무국장, 회계감사
+  나. 단일후보
+      1) 투표일시 : 2026년 12월 10일(목) 14:00 ~ 17:00
+      2) 투표방식 : 찬반투표
+      3) 투표장소 : 노동조합 사무실 선거관리위원회
+  다. 경    선
+      1) 투표일시 : 2026년 12월 21일(월) 08:00 ~ 17:00
+      2) 투표방식 : 선택투표
+      3) 투표장소 : 노동조합 사무실 선거관리위원회
+
+2. 선거인 명부열람 (선거관리규정 제13조)
+  가. 열람기간 : 2026년 12월 8일 ~ 2026년 12월 10일
+  나. 열람장소 : 노동조합 사무실(선거관리위원회)
+
+3. 후보자 등록 (선거관리규정 제16조)
+  가. 등록기간 : 2026년 12월 8일 08:00 ~ 2026년 12월 10일 14:00
+  나. 구비서류 : ① 후보자등록신청서 1부
+                      ② 조합원증명원 1부
+                      ③ 의무금납부확인서 1부
+                      ④ 조합원추천서 1부 (위원장에 한함)`,
+    noticeDate:'2026년 12월 7일', noticeOrg:UWF_EC, noticeSign:'위원장  김 성 용',
+    candBody:` 선광신컨테이너터미널(주) 노동조합 제 5 대 임원선거 입후보자를 선거관리규정 제   조에 의하여 아래와 같이 공고합니다.
+
+                              - 아   래 -
+
+1. 위 원 장
+      성  명 :
+      소  속 :
+
+2. 부위원장
+      성  명 :
+      소  속 :
+
+3. 사무국장
+      성  명 :
+      소  속 :
+
+4. 회계감사
+      성  명 :
+      소  속 :`,
+    candDate:'2026년 12월 10일', candOrg:UWF_EC, candSign:'위원장  김 성 용',
+    recordBody:`1. 투표 결과는 다음과 같음
+  (1) 투표장소 : 노동조합 사무실 선거관리위원회
+  (2) 투표개시시각 : 2026년 12월 10일 14:00부터
+  (3) 투표종료시각 : 2026년 12월 10일 17:00까지
+  (4) 투표상황 :
+      ① 확정선거인수 :        명
+      ② 투 표 자 수 :        명
+      ③ 기 권 자 수 :        명
+
+2. 개표결과는 다음과 같음
+  (1) 개표장소 : 노동조합 사무실 선거관리위원회
+  (2) 개표개시시각 :
+  (3) 개표종료시각 :
+  (4) 후보자별 득표상황
+      * 위원장 후보자
+         찬성        표,  반대        표,  기권(무효)        표
+
+3. 당선자의 결정 상황은 다음과 같음
+  * 제1차 투표에서 재적 조합원        명의 과반수의 투표와 투표자 과반수 이상의 찬성표를 득한 자를 당선인으로 결정하였음.
+  - 당선자 :
+  - 총        표 중 찬성        표, 반대        표, 기권        표, 무효        표`,
+    recordDae:'제 5 대 임원 선거록', recordDate:'2026년 12월     일', rs1:'위원장  김 성 용', rs2:'위  원  서 인 기', rs3:'위  원  우 동 식'
+  });
+  if(kind==='notc') Object.assign(v, {
+    commBody:` 선거관리규정 제9조(선거관리위원회 구성)에 의거하여 제 5 대 임원(위원장, 부위원장, 사무국장, 회계감사) 선거에 관한 선거관리위원회가 아래와 같이 구성되었음을 공고합니다.
+
+                              - 아   래 -
+
+□ 선거관리위원회 위원장 : 김 성 용
+
+□ 선거관리위원회 위  원 : 서 인 기
+
+□ 선거관리위원회 위  원 : 우 동 식
+
+( 제 5 대 임원선거 입후보에 대한 문의사항은 선거관리위원회에 문의 바람 )`,
+    commDate:'2026년 12월 1일', commOrg:UWF_UN, commSign:`위원장  ${chief}`,
+    gmBody:` 선광신컨테이너터미널(주) 노동조합 제11년차 정기총회는 대의원대회로 갈음하여 아래와 같이 개최함을 알려드립니다.
+
+                              - 아   래 -
+
+1. 일  시 :
+
+2. 장  소 :
+
+3. 안  건
+      ①
+      ②
+      ③
+      ④`,
+    gmDate:'2027년 6월 15일', gmOrg:UWF_UN, gmSign:`위원장  ${chief}`
+  });
+  return {kind, page:0, who:'', tenureMan:false, v};
+}
+function uwfSetPage(f, key, F, M){
+  const v = f.v;
+  const gg = (k, title)=> `<div class="uwfPage uwfGg"><div class="uwfGgT">${title}</div>${M(k+'Body','uwfGgBody')}<div class="uwfGgDate">${F(k+'Date')}</div><div class="uwfGgOrg">${F(k+'Org')}</div><div class="uwfGgSign">${F(k+'Sign')}</div></div>`;
+  const elec = f.kind==='elect', apv = elec ? ['선관위원','선관위원','선관위원장'] : ['사무국장','부위원장','위원장'];
+  const rows = extra=> [['성&nbsp;&nbsp;&nbsp;&nbsp;명','name'],['소&nbsp;&nbsp;&nbsp;&nbsp;속','part'],['사&nbsp;&nbsp;&nbsp;&nbsp;번','emp'],['입&nbsp;사&nbsp;일','hire'],['주&nbsp;&nbsp;&nbsp;&nbsp;소','addr'],['가&nbsp;입&nbsp;일','join'],['연&nbsp;락&nbsp;처','tel'], ...(extra||[])]
+    .map(([l,k])=> `<tr><th>${l}</th><td colspan="3">${F(k)}</td></tr>`).join('');
+  const head = (title, sub)=> `<table class="uwfT uwfApT"><colgroup><col style="width:22%"><col style="width:26%"><col style="width:17.33%"><col style="width:17.33%"><col style="width:17.34%"></colgroup>
+      <tr><td rowspan="2" colspan="2" class="uwfApTitle">${title}${sub ? `<div class="uwfApSub">(${sub})</div>` : ''}</td>${apv.map(a=> `<td class="uwfC uwfApvH">${a}</td>`).join('')}</tr>
+      <tr class="uwfApSign"><td></td><td></td><td></td></tr></table>`;
+  const form = (title, sub, text, to, extra)=> `<div class="uwfPage uwfAp">${head(title, sub)}
+      <table class="uwfT uwfApR"><colgroup><col style="width:22%"><col><col><col></colgroup>${rows(extra)}</table>
+      <p class="uwfApTxt">${text}</p>
+      <div class="uwfApDate">${F('fDate')}</div>
+      <div class="uwfApWho">신&nbsp;청&nbsp;인&nbsp;:&nbsp;&nbsp;${F('name','uwfApName')}&nbsp;&nbsp;(서명)</div>
+      <div class="uwfApTo">${to}</div></div>`;
+  const pos = esc(v.pos || '위원장');
+  if(key==='notice') return gg('notice', '공&nbsp;&nbsp;&nbsp;&nbsp;고');
+  if(key==='cand') return gg('cand', '입 후 보 자&nbsp;&nbsp;등 록&nbsp;&nbsp;공 고');
+  if(key==='comm') return gg('comm', '공&nbsp;&nbsp;&nbsp;&nbsp;고');
+  if(key==='gm') return gg('gm', '공&nbsp;&nbsp;&nbsp;&nbsp;고');
+  if(key==='apply') return form('후보자등록신청서', pos, `상기 본인은 ${UWF_UN} 규약 및 선거관리규정을 준수할 것을 서약하며 선거관리규정 제6조, 제16조에 의거 노동조합 ${pos} 후보등록을 신청합니다.`, `${UWF_EC} 귀중`);
+  if(key==='watch') return form('투표참관인신청서', '', `상기 본인은 ${UWF_UN} 규약 및 선거관리규정을 준수할 것을 서약하며 선거관리규정 제6조, 제16조에 의거 노동조합 ${pos} 투표 참관인 등록을 신청합니다.`, `${UWF_EC} 귀중`);
+  if(key==='memcert') return form('조합원증명원', '', `상기 인은 ${UWF_UN} 조합원임을 증명합니다.`, UWF_UN);
+  if(key==='dues') return form('의무금납부확인서', '', `상기 인은 ${UWF_UN} 조합원으로서 상기 기간에 의무금을 성실히 납부하였음을 증명합니다.`, UWF_UN, [['기&nbsp;&nbsp;&nbsp;&nbsp;간','period']]);
+  if(key==='recom') return `<div class="uwfPage uwfAp uwfRecom">${head('입후보추천서', '')}
+      <table class="uwfT uwfApR"><colgroup><col style="width:22%"><col><col><col></colgroup>${rows()}</table>
+      <p class="uwfApTxt">상기 인을 ${UWF_UN} ${pos}선거에 입후보자로 추천합니다.</p>
+      <div class="uwfRcT">추천인 명단</div>
+      <table class="uwfT uwfRcL"><colgroup><col style="width:9%"><col style="width:22%"><col style="width:17%"><col style="width:18%"><col style="width:18%"><col style="width:16%"></colgroup>
+        <tr><th>번호</th><th>소 속</th><th>직 책</th><th>성 명</th><th>서 명</th><th>비 고</th></tr>
+        ${[...Array(16).keys()].map(i=> `<tr><td class="uwfC">${i+1}</td>${[0,1,2,3,4].map(j=> `<td class="uwfC">${F(`rc${i}_${j}`)}</td>`).join('')}</tr>`).join('')}</table>
+      <div class="uwfApDate">${F('fDate')}</div>
+      <div class="uwfApTo">${UWF_EC} 귀중</div></div>`;
+  if(key==='record') return `<div class="uwfPage uwfGg"><div class="uwfRdOrg">${UWF_UN}</div><div class="uwfGgT uwfRdT">${F('recordDae')}</div>${M('recordBody','uwfGgBody uwfRdBody')}
+      <div class="uwfGgDate">${F('recordDate')}</div><div class="uwfGgOrg">${UWF_EC}</div>
+      <div class="uwfRdSigns"><div>${F('rs1')}&nbsp;&nbsp;(서 명)</div><div>${F('rs2')}&nbsp;&nbsp;(서 명)</div><div>${F('rs3')}&nbsp;&nbsp;(서 명)</div></div></div>`;
+  return '';
+}
+function uwfSetPages(f, F, M){
+  const set = UWF_SETS[f.kind], keys = f.page==='all' ? set.pages.map(p=> p[0]) : [set.pages[f.page||0][0]];
+  return keys.map(k=> uwfSetPage(f, k, F, M)).join('');
+}
 function uwFormDefault(kind, year){
+  if(UWF_SETS[kind]) return uwfSetDefault(kind);
   const chief = uwFormChief(), cur = uwMemList('cur');
   if(kind==='notice'){ const yr = String(year || todayStr().slice(0,4)), v = ntValues(yr);
     const tel = nm=>{ const m = cur.find(x=> String(x.name||'').replace(/\s/g,'')===String(nm||'').replace(/\s/g,'')); return m && m.tel ? uwTelFmt(m.tel) : ''; };
@@ -10342,6 +10519,7 @@ function uwTenure(hire){ const m = String(hire||'').match(/(\d{4})\D+(\d{1,2})(?
 function uwFormPick(i){
   const m = uwMemList('cur')[i]; if(!m) return; const v = uwForm.v, nm = String(m.name||'').replace(/\s/g,'');
   if(uwForm.kind==='sch'){ const sp = nm.split('').join(' '); v.wName = sp; v.pWork = nm; v.homeAddr = m.addr ? m.addr + (m.tel ? '     ☎ ' + uwTelFmt(m.tel) : '') : v.homeAddr; return; }
+  if(UWF_SETS[uwForm.kind]){ v.name = nm; v.part = uwPartShow(m.part) || ''; v.emp = m.emp || ''; v.addr = m.addr || ''; v.join = m.join || ''; v.tel = uwTelFmt(m.tel) || ''; return; }   // 임원선거·증명 서식
   if(uwForm.kind==='rec'){ v.name = nm.split('').join(' '); if(!v.rank) v.rank = m.pos && m.pos!=='조합원' ? '' : ''; }
   else { const sp = nm.split('').join(' '); v.name = sp; v.bName = sp; v.cName = sp; v.addr = m.addr || v.addr; v.cTel = uwTelFmt(m.tel) || v.cTel; v.grade = m.pos && m.pos!=='조합원' ? m.pos : v.grade; v.bOrg = '선광신컨테이너터미널(주)'; }
 }
@@ -10350,6 +10528,7 @@ function uwFormPages(f){
   const F = (k, cls)=> `<span class="uwfIn${cls ? ' '+cls : ''}" contenteditable="true" data-uwf="${k}">${esc(v[k]||'')}</span>`;
   const M = (k, cls)=> `<div class="uwfIn uwfML${cls ? ' '+cls : ''}" contenteditable="true" data-uwf="${k}">${esc(v[k]||'').replace(/\n/g,'<br>')}</div>`;
   const C = k=> `<span class="uwfChk" data-uwfc="${k}">${v[k] ? '■' : '□'}</span>`;
+  if(UWF_SETS[f.kind]) return uwfSetPages(f, F, M);
   if(f.kind==='notice'){
     const N = k=> F(k, 'uwfNtN');
     const G = k=> `<span class="uwfChk" data-uwfc="${k}">[${v[k] ? ' V ' : '&nbsp;&nbsp;&nbsp;'}]</span>`;
@@ -10525,7 +10704,7 @@ function pageUwForm(cur){
   subscribeGs(); subscribeNotice();
   if(!uwForm) uwForm = uwFormDefault('rec');
   const f = uwForm, sv = f.kind==='gs' || f.kind==='notice', gsEdit = sv && (userRole==='union' || userRole==='all');
-  return `<div class="row uwfBar"><span style="font-weight:800;">서류 선택</span><select id="uwfKind" class="docSel"><option value="rec"${f.kind==='rec'?' selected':''}>🏅 근무유공자 추천서</option><option value="merit"${f.kind==='merit'?' selected':''}>📜 공적조서 (4쪽)</option><option value="sch"${f.kind==='sch'?' selected':''}>🎓 노동절 장학생 (3쪽)</option><option value="gs"${f.kind==='gs'?' selected':''}>💐 경조사비 지급기준</option><option value="notice"${f.kind==='notice'?' selected':''}>📮 노동조합 정기 통보서</option></select>
+  return `<div class="row uwfBar"><span style="font-weight:800;">서류 선택</span><select id="uwfKind" class="docSel"><option value="rec"${f.kind==='rec'?' selected':''}>🏅 근무유공자 추천서</option><option value="merit"${f.kind==='merit'?' selected':''}>📜 공적조서 (4쪽)</option><option value="sch"${f.kind==='sch'?' selected':''}>🎓 노동절 장학생 (3쪽)</option><option value="gs"${f.kind==='gs'?' selected':''}>💐 경조사비 지급기준</option><option value="notice"${f.kind==='notice'?' selected':''}>📮 노동조합 정기 통보서</option>${Object.keys(UWF_SETS).map(k=> `<option value="${k}"${f.kind===k?' selected':''}>${UWF_SETS[k].label}</option>`).join('')}</select>${UWF_SETS[f.kind] ? `<span style="font-weight:800;">쪽</span><select id="uwfSetPg" class="docSel">${UWF_SETS[f.kind].pages.map(([k,l],i)=> `<option value="${i}"${String(f.page)===String(i)?' selected':''}>${l}</option>`).join('')}<option value="all"${f.page==='all'?' selected':''}>전체 (${UWF_SETS[f.kind].pages.length}쪽)</option></select>${f.kind==='elect' ? `<span style="font-weight:800;">직책</span><select id="uwfPos" class="docSel">${['위원장','부위원장','사무국장','회계감사'].map(x=> `<option${f.v.pos===x?' selected':''}>${x}</option>`).join('')}</select>` : ''}` : ''}
       ${f.kind==='notice' ? `<span style="font-weight:800;">연도</span><select id="uwfYear" class="docSel">${ntYears().map(y=> `<option value="${y}"${y===f.year?' selected':''}>${y}년${ntSaved()[y] ? ' · 저장됨' : UW_NT_SEED[y] ? ' · 엑셀' : ' · 새로'}</option>`).join('')}</select>` : ''}
       <span style="font-weight:800;${sv ? 'display:none;' : ''}">대상자</span><select id="uwfWho" class="docSel"${sv ? ' style="display:none;"' : ''}><option value="">직접 입력</option>${cur.map((m,i)=> `<option value="${i}"${String(f.who)===String(i)?' selected':''}>${esc(m.name||'')}${m.pos && m.pos!=='조합원' ? ' · '+esc(m.pos) : ''}</option>`).join('')}</select>
       <button type="button" class="btn sm" id="uwfPrint">🖨️ 출력 (인쇄 · PDF 저장)</button>${gsEdit ? `<button type="button" class="btn sm" id="uwfGsSave"${f.dirty ? '' : ' disabled'}>💾 저장${f.dirty ? ' (고친 내용 있음)' : ''}</button>` : ''}<button type="button" class="btn warn ghost sm" id="uwfReset">${f.kind==='gs' ? '원본으로' : f.kind==='notice' ? '저장 전으로' : '새로 작성'}</button></div>
@@ -10538,6 +10717,8 @@ function pageUwForm(cur){
 function bindUwForm(){
   const f = uwForm; if(!f) return;
   const kind = document.getElementById('uwfKind'); if(kind) kind.onchange = ()=>{ const who = f.who; uwForm = uwFormDefault(kind.value); if(who !== '' && uwForm.kind!=='gs' && uwForm.kind!=='notice'){ uwForm.who = who; uwFormPick(Number(who)); } render(); };
+  const sp = document.getElementById('uwfSetPg'); if(sp) sp.onchange = ()=>{ uwForm.page = sp.value==='all' ? 'all' : Number(sp.value); render(); };
+  const ps = document.getElementById('uwfPos'); if(ps) ps.onchange = ()=>{ uwForm.v.pos = ps.value; render(); };
   const yr = document.getElementById('uwfYear'); if(yr) yr.onchange = ()=>{ const y = yr.value, go = ()=>{ uwForm = uwFormDefault('notice', y); render(); };
     if(f.dirty){ yr.value = f.year; appConfirm('저장하지 않은 내용이 있어요. 저장하지 않고 다른 연도로 갈까요?', go); } else go(); };
   const who = document.getElementById('uwfWho'); if(who) who.onchange = ()=>{ uwForm.who = who.value; if(who.value !== '') uwFormPick(Number(who.value)); render(); };
@@ -10587,7 +10768,7 @@ function uwFormPrint(){
   document.body.appendChild(box);
   box.querySelectorAll('input[type=file]').forEach(e=> e.remove());
   if(uwForm.kind==='gs' || uwForm.kind==='notice') box.classList.add('uwFormLand');
-  const old = document.title; document.title = uwForm.kind==='rec' ? '근무유공자 추천서' : uwForm.kind==='sch' ? '장학생 추천서' : uwForm.kind==='gs' ? '경조사비 지급기준' : uwForm.kind==='notice' ? `노동조합현황 정기 통보서(${uwForm.year})` : '공적조서';
+  const old = document.title; document.title = UWF_SETS[uwForm.kind] ? (uwForm.page==='all' ? UWF_SETS[uwForm.kind].label.replace(/^\S+\s/, '') : UWF_SETS[uwForm.kind].pages[uwForm.page][1] + (uwForm.kind==='elect' && /apply|recom/.test(UWF_SETS[uwForm.kind].pages[uwForm.page][0]) ? `(${uwForm.v.pos})` : '')) : uwForm.kind==='rec' ? '근무유공자 추천서' : uwForm.kind==='sch' ? '장학생 추천서' : uwForm.kind==='gs' ? '경조사비 지급기준' : uwForm.kind==='notice' ? `노동조합현황 정기 통보서(${uwForm.year})` : '공적조서';
   document.body.classList.add('printing-uw');
   const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
   window.addEventListener('afterprint', done);
