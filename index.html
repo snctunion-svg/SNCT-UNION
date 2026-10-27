@@ -4698,10 +4698,10 @@ function pageHub(list){
 const OFC_KNOWN = {'20261026-083258': {no:'인노대협 제2026-36호', date:'2026-10-26', from:'한국노총인천본부 연안대표자협의회', title:'연안협의회 월례회의 (박상규 위원장 전별금)'}};   // 파일 이름으로 알아서 채움
 const DOC_BOXES = {
   uwofc: {name:'협의회 공문서', unit:'공문서', listDoc:'ofcList', pagePre:'ofc', titleKey:'title', titleLabel:'제목', required:'제목을 적어 주세요.',
-    fields:[['date','시행일자','date'],['no','문서번호','text','예: 인노대협 제2026-36호'],['title','제목','text','예: 연안협의회 월례회의',1],['from','보낸 곳','text','예: 한국노총인천본부 연안대표자협의회',1],['memo','메모 (선택)','area','예: 10/28까지 2만원 송금',1]],
+    fields:[['date','시행일자','date'],['no','문서번호','text','예: 인노대협 제2026-36호'],['title','제목','text','예: 연안협의회 월례회의',1],['from','보낸 곳','text','예: 한국노총인천본부 연안대표자협의회',1],['memo','메모 (선택)','area','',1]],
     sub: o=> [o.no, o.from], right: o=> `${o.pages||0}쪽`},
   uwrcpt: {name:'영수증', unit:'영수증', listDoc:'rcptList', pagePre:'rcpt', titleKey:'title', titleLabel:'사용처·내용', required:'사용처·내용을 적어 주세요.',
-    fields:[['date','사용일','date'],['amount','금액(원)','money','예: 35000'],['title','사용처·내용','text','예: 대의원대회 다과 구입',1],['method','결제','pick','',0,['','법인카드','체크카드','현금','계좌이체']],['memo','메모 (선택)','area','예: 사무국장 비용처리',1]],
+    fields:[['date','사용일','date'],['amount','금액(원)','money','예: 35000'],['title','사용처·내용','text','예: 대의원대회 다과 구입',1],['method','결제','pick','',0,['','법인카드','체크카드','현금','계좌이체']],['memo','메모 (선택)','area','',1]],
     sub: o=> [o.method, o.memo ? '📝' : ''], right: o=> o.amount ? `${Number(o.amount).toLocaleString('ko-KR')}원` : '', total: true}
 };
 const dbx = {};   // view -> {list, err, view, imgs, form, busy}
@@ -4747,6 +4747,64 @@ async function ofcFileToPages(file){
   const W = src.width, H = src.height, k = Math.min(1, 1600 / Math.max(W, H)), c = document.createElement('canvas'); c.width = Math.round(W*k); c.height = Math.round(H*k);
   const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height);
   return {pages: [ofcCanvasToJpeg(c)], text: ''};
+}
+// ----- 스캔·사진 공문의 글자 읽기(OCR, tesseract.js) → 문서번호·시행일자·제목·보낸 곳 자동 채우기 -----
+let ofcOcrLib = null;
+function ofcLoadOcr(){
+  if(ofcOcrLib) return ofcOcrLib;
+  ofcOcrLib = new Promise((ok, no)=>{
+    if(window.Tesseract) return ok(window.Tesseract);
+    const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload = ()=> window.Tesseract ? ok(window.Tesseract) : no(new Error('OCR')); s.onerror = ()=>{ ofcOcrLib = null; no(new Error('글자 읽기 도구를 불러오지 못했어요.')); };
+    document.head.appendChild(s);
+  });
+  return ofcOcrLib;
+}
+async function ofcOcrText(dataUrl, frac){
+  const T = await ofcLoadOcr();
+  const im = await new Promise((ok, no)=>{ const x = new Image(); x.onload = ()=> ok(x); x.onerror = no; x.src = dataUrl; });
+  const W = Math.min(1600, im.width), H = Math.round(im.height * W / im.width), top = Math.round(H * (frac || 1));   // 공문은 윗부분만 읽어 빠르게
+  const c = document.createElement('canvas'); c.width = W; c.height = top; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, top); g.drawImage(im, 0, 0, W, H);
+  let worker;
+  try{ worker = await T.createWorker('kor', 1, {langPath: 'https://cdn.jsdelivr.net/gh/tesseract-ocr/tessdata_fast@4.1.0', gzip: false}); }   // 가벼운 한글 글자 자료(약 1.6MB)
+  catch(e){ worker = await T.createWorker('kor'); }   // 안 되면 기본 자료
+  try{ const r = await worker.recognize(c); return (r && r.data && r.data.text) || ''; } finally { try{ await worker.terminate(); }catch(e){} }
+}
+function ofcParseText(raw){
+  const fix = t=> String(t||'').replace(/노[종층충]/g, '노총').replace(/민천/g, '인천').replace(/[면연]만협/g, '연안협').replace(/면안/g, '연안').replace(/[|\[\]]+\s*$/g, '').replace(/\s{2,}/g, ' ').trim();
+  const lines = String(raw||'').split(/\n+/).map(fix).filter(Boolean), all = lines.join('\n'), g = {};
+  const no = all.match(/([가-힣A-Za-z]{2,10})\s*[:：;]\s*(제\s*\d{4}\s*[-~–—]\s*\d+\s*호)/) || all.match(/(제\s*\d{4}\s*[-~–—]\s*\d+\s*호)/);
+  if(no) g.no = no[2] ? `${no[1]} ${no[2].replace(/\s/g,'').replace(/[~–—]/,'-')}` : no[1].replace(/\s/g,'').replace(/[~–—]/,'-');
+  const dt = all.match(/시\s*행\s*일\s*자\s*[:：;]?\s*(\d{4})\s*[년.\-]\s*(\d{1,2})\s*[월.\-]\s*(\d{1,2})/); if(dt) g.date = `${dt[1]}-${pad2(dt[2])}-${pad2(dt[3])}`;
+  const tl = lines.find(l=> /^제\s*목\s*[:：;]/.test(l)); if(tl) g.title = tl.replace(/^제\s*목\s*[:：;]\s*/, '').trim();
+  const br = lines.find(l=> /^\[.+\]?$/.test(l) || /^\[\s*[가-힣]/.test(l)); if(br && g.title){ const b = br.replace(/^\[\s*|\s*\]?$/g, '').trim(); if(b && !g.title.includes(b)) g.title += ` (${b})`; }
+  const org = /(협의회|노동조합|노조|본부|연맹|위원회|노총|조합)/;
+  const fr = lines.slice(0, 6).find(l=> org.test(l) && !/우편|전화|전송|계좌|From|To\b|\d{3,}/.test(l) && l.replace(/\s/g,'').length <= 30);
+  if(fr) g.from = fr.replace(/\s+/g, ' ');
+  return g;
+}
+// 영수증: 금액·날짜·사용처·결제 방법 읽기
+function rcptParseText(raw){
+  const lines = String(raw||'').split(/\n+/).map(l=> l.replace(/\s{2,}/g, ' ').trim()).filter(Boolean), g = {};
+  const num = s=> Number(String(s).replace(/[^\d]/g, ''));
+  const amtRe = /(\d{1,3}(?:[,.]\d{3})+|\d{3,8})\s*원?/g;
+  const KEY = /(합\s*계|총\s*액|총\s*금\s*액|결\s*제\s*금\s*액|받\s*을\s*금\s*액|청\s*구\s*금\s*액|승\s*인\s*금\s*액|판\s*매\s*금\s*액|납\s*부\s*금\s*액|금\s*액|합계금액|TOTAL|Total)/;
+  let best = 0;
+  lines.forEach((l, i)=>{
+    if(!KEY.test(l)) return;
+    const scan = (l + ' ' + (lines[i+1]||'')).replace(/\d{2,4}[-.\/]\d{1,2}[-.\/]\d{1,2}/g, ' ').replace(/\d{2,4}-\d{3,4}-\d{4}/g, ' ');
+    for(const m of scan.matchAll(amtRe)){ const v = num(m[1]); if(v >= 100 && v < 100000000 && v > best) best = v; }
+  });
+  if(!best){ for(const l of lines){ if(/\d{2,4}-\d{3,4}-\d{4}|\d{4}[- ]\d{4}[- ]\d{4}/.test(l)) continue; for(const m of l.matchAll(/(\d{1,3}(?:,\d{3})+)\s*원?/g)){ const v = num(m[1]); if(v >= 100 && v < 100000000 && v > best) best = v; } } }
+  if(best) g.amount = String(best);
+  const d = String(raw).match(/(20\d{2})\s*[년.\-\/]\s*(\d{1,2})\s*[월.\-\/]\s*(\d{1,2})/) || String(raw).match(/\b(\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})\b/);
+  if(d){ const y = d[1].length===2 ? '20' + d[1] : d[1], mm = Number(d[2]), dd = Number(d[3]); if(mm>=1 && mm<=12 && dd>=1 && dd<=31) g.date = `${y}-${pad2(mm)}-${pad2(dd)}`; }
+  const shopL = lines.find(l=> /(상\s*호|가\s*맹\s*점|매\s*장\s*명|업\s*체\s*명|가맹점명)\s*[:：]?/.test(l));
+  if(shopL){ const t = shopL.replace(/.*?(상\s*호|가\s*맹\s*점\s*명?|매\s*장\s*명|업\s*체\s*명)\s*[:：]?\s*/, '').replace(/\s*(대표|사업자|TEL|전화).*/i, '').trim(); if(t.length >= 2) g.title = t; }
+  if(!g.title){ const t = lines.find(l=> /[가-힣]{2,}/.test(l) && !/영\s*수\s*증|receipt|카드|승인|일시|번호|전화|주소|사업자/i.test(l) && l.length <= 30); if(t) g.title = t; }
+  const all = lines.join(' ');
+  g.method = /현\s*금/.test(all) && !/카\s*드/.test(all) ? '현금' : /체\s*크/.test(all) ? '체크카드' : /이\s*체|계\s*좌/.test(all) ? '계좌이체' : /신\s*용|카\s*드/.test(all) ? '법인카드' : '';
+  return g;
 }
 function ofcGuess(files, text){
   const base = (files[0] && files[0].name || '').replace(/\.[^.]+$/, '');
@@ -4830,7 +4888,20 @@ function bindDocBox(v){
       if(!pages.length) throw new Error('쪽이 없어요.');
       if(add && st.form) st.form.pages = (st.form.pages || []).concat(pages);
       else {
-        const g = v==='uwofc' ? ofcGuess(files, text) : {};
+        let g = {};
+        const fill = o=> Object.keys(o).forEach(k=>{ if(o[k] && !g[k]) g[k] = o[k]; });
+        if(v==='uwofc'){
+          g = ofcGuess(files, text);
+          if(!g.title && text.trim()) fill(ofcParseText(text));   // 글자가 들어 있는 PDF
+          if(!g.title || !g.no){   // 스캔·사진: 글자 읽기(처음 한 번은 도구를 받느라 조금 걸림)
+            st.busy = '글자 읽는 중…'; render();
+            try{ fill(ofcParseText(await ofcOcrText(pages[0], 0.62))); }catch(e){ showToast('글자를 자동으로 읽지 못했어요. 직접 적어 주세요.'); }
+          }
+        } else if(v==='uwrcpt'){   // 영수증: 금액·날짜·사용처·결제 읽기
+          if(text.trim()) fill(rcptParseText(text));
+          if(!g.amount){ st.busy = '금액 읽는 중…'; render();
+            try{ fill(rcptParseText(await ofcOcrText(pages[0], 1))); }catch(e){ showToast('금액을 자동으로 읽지 못했어요. 직접 적어 주세요.'); } }
+        }
         st.form = Object.assign({date: todayStr()}, g, {pages});
         if(!st.form.date) st.form.date = todayStr();
       }
