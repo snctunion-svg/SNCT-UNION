@@ -1645,6 +1645,15 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calMonthHd{margin:16px 0 8px;font-size:14px;font-weight:800;}
 .calMonthDate{font-size:12px;font-weight:800;color:var(--text-muted);margin:8px 0 4px;}
 .calPop{max-width:420px;}
+.calGrid .calEv.calW-chief{background:#fbcfe8 !important;border-radius:4px;padding:1px 4px;margin:0 1px;}
+.calGrid .calEv.calW-office{background:#fef08a !important;border-radius:4px;padding:1px 4px;margin:0 1px;}
+.calGrid .calEv.calW-etc{background:#fff !important;border:1px solid #d1d5db !important;border-radius:4px;padding:0 3px;margin:0 1px;}
+.calItem.calW-chief{background:#fdf2f8;} .calItem.calW-chief .calItemBar{background:#ec4899;}
+.calItem.calW-office{background:#fefce8;} .calItem.calW-office .calItemBar{background:#eab308;}
+.calItem.calW-etc{background:#fff;} .calItem.calW-etc .calItemBar{background:#d1d5db;}
+.calWho[data-cal-who="위원장"].on{background:#ec4899;border-color:#ec4899;}
+.calWho[data-cal-who="사무국"]{border-color:#fde047;color:#854d0e;} .calWho[data-cal-who="사무국"].on{background:#facc15;border-color:#facc15;color:#422006;}
+.calWho[data-cal-who="기타"]{border-color:#d1d5db;color:#374151;} .calWho[data-cal-who="기타"].on{background:#fff;border-color:#374151;color:#111;box-shadow:inset 0 0 0 1px #374151;}
 .calWhoRow{display:flex;gap:6px;margin:2px 0 6px;flex-wrap:wrap;}
 .calWho{border:1px solid #fbcfe8;background:#fff;color:#9d174d;border-radius:16px;padding:5px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .calWho.on{background:#db2777;border-color:#db2777;color:#fff;}
@@ -5065,12 +5074,13 @@ function calMonthEvents(y, m){   // 이번 달 일정 + 앞 달에 시작해서 
   if(!calData[pk] && db && !calPrevLoad[pk]){ calPrevLoad[pk] = 1; calLoadMonth(pk).then(()=>{ if(VIEW==='uwcal') scheduleRender(); }); }
   return (calData[k] || []).concat((calData[pk] || []).filter(e=> calEnd(e) >= first));
 }
+function calWhoCls(e){ return e.who==='위원장' ? ' calW-chief' : e.who==='사무국' ? ' calW-office' : e.who==='기타' ? ' calW-etc' : ''; }   // 위원장 분홍 · 사무국 노랑 · 기타 흰색
 function calWho(e){ return e.who ? `[${e.who}] ` : ''; }
 function calRangeLabel(e){ if(calEnd(e)===e.d) return ''; const f = x=>{ const [,mm,dd] = x.split('-').map(Number); return `${mm}/${dd}`; }; return `${f(e.d)} ~ ${f(calEnd(e))}`; }
 function calDayEvents(ds){ const [y,m] = ds.split('-').map(Number); return calMonthEvents(y, m).filter(e=> calOn(e, ds)); }
 function calDateLabel(ds){ const [y,m,d] = ds.split('-').map(Number); const w = '일월화수목금토'[new Date(y, m-1, d).getDay()]; return `${m}월 ${d}일 (${w})`; }
 function calItemHtml(e){
-  return `<button type="button" class="calItem" data-cal-ev="${esc(e.id)}"><span class="calItemBar calD-gen"></span><span class="calItemMain">
+  return `<button type="button" class="calItem${calWhoCls(e)}" data-cal-ev="${esc(e.id)}"><span class="calItemBar calD-gen"></span><span class="calItemMain">
     <div class="calItemT">${esc(calWho(e) + (e.title||'(제목 없음)'))}</div>
     ${e.t || calRangeLabel(e) ? `<div class="calItemS">${calRangeLabel(e) ? `📅 ${esc(calRangeLabel(e))}` : ''}${calRangeLabel(e) && e.t ? ' · ' : ''}${e.t ? `🕘 ${esc(e.t)}` : ''}</div>` : ''}
     ${e.memo ? `<div class="calItemM">${esc(e.memo)}</div>` : ''}</span></button>`;
@@ -5087,7 +5097,7 @@ function pageUwCal(){
     const cls = ['calCell', w===0 ? 'sun' : w===6 ? 'sat' : '', hol ? 'hol' : '', ds===today ? 'today' : '', ds===calSel ? 'sel' : ''].filter(Boolean).join(' ');
     cells.push(`<button type="button" class="${cls}" data-cal-day="${ds}" aria-label="${esc(calDateLabel(ds))} 일정 ${ev.length}개">
       <span class="calNumRow"><span class="calNum">${d}</span>${hol ? `<span class="calHol">${esc(hol)}</span>` : ''}</span>
-      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen">* ${e.t && e.d===ds ? `<b>${esc(e.t)}</b>` : ''}${esc(calWho(e) + (e.title||''))}</span>`).join('')}
+      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen${calWhoCls(e)}">* ${e.t && e.d===ds ? `<b>${esc(e.t)}</b>` : ''}${esc(calWho(e) + (e.title||''))}</span>`).join('')}
       ${ev.length > 3 ? `<span class="calMore">+${ev.length-3}개 더</span>` : ''}
       ${ev.length ? `<span class="calDots">${ev.slice(0,4).map(()=> `<i class="calD-gen"></i>`).join('')}</span>` : ''}
     </button>`);
