@@ -1500,7 +1500,7 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
 .uwElSum table{border-collapse:collapse;width:60%;} .uwElSum th,.uwElSum td{border:1px solid #000;text-align:center;padding:1.5mm;font-size:10.5pt;width:25%;} .uwElSum th{background:#eee;-webkit-print-color-adjust:exact;print-color-adjust:exact;} .uwElSum td{height:8mm;}
 .uwElHd{position:relative;text-align:center;margin:0 0 4mm;}
 .uwElT{font-size:18pt;font-weight:900;text-decoration:underline;text-underline-offset:5px;letter-spacing:1pt;}
-.uwElK{position:absolute;right:0;bottom:0;font-size:12pt;}
+.uwElTbl th.uwElVt{height:7mm;font-size:10pt;font-weight:700;}
 .uwElTbl{width:100%;border-collapse:collapse;table-layout:fixed;}
 .uwElTbl th,.uwElTbl td{border:1px solid #000;text-align:center;font-size:11pt;height:10.2mm;padding:0 1mm;}
 .uwElTbl th{background:#eee;font-weight:700;height:9mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -11088,34 +11088,33 @@ function uwElectList(cur){ return cur.slice().sort((a,b)=> uwElPart(a.part).loca
 function uwElectHtml(cur){
   const list = uwElectList(cur), e = uwElect;
   return `<div class="uwElSum"><table><tr><th>총원</th><th>육아휴직</th><th>사전투표</th><th>본투표</th></tr><tr><td>${list.length}명</td><td>${e.leave !== '' ? esc(e.leave) + '명' : ''}</td><td>${esc(e.pre)}</td><td>${esc(e.main)}</td></tr></table></div>
-    <div class="uwElHd"><span class="uwElT">선거인 명부</span>${e.kind ? `<span class="uwElK">&lt;${esc(e.kind)}&gt;</span>` : ''}</div>
+    <div class="uwElHd"><span class="uwElT">선거인 명부</span></div>
     <table class="uwElTbl"><colgroup><col style="width:7%"><col style="width:9%"><col style="width:15%"><col style="width:16%"><col style="width:19%"><col style="width:17%"><col style="width:17%"></colgroup>
-      <thead><tr><th>번호</th><th>파트</th><th>성명</th><th>가입일</th><th>전화번호</th><th>서명</th><th>비고</th></tr></thead>
+      <thead><tr><th rowspan="2">번호</th><th rowspan="2">파트</th><th rowspan="2">성명</th><th rowspan="2">가입일</th><th rowspan="2">전화번호</th><th class="uwElVt">&lt;사전투표&gt;</th><th class="uwElVt">&lt;본투표&gt;</th></tr><tr><th>서명</th><th>서명</th></tr></thead>
       <tbody>${list.map((m,i)=> `<tr><td>${i+1}</td><td>${esc(uwElPart(m.part))}</td><td>${esc(m.name||'')}</td><td>${esc(m.join||'')}</td><td>${esc(uwTelFmt(m.tel))}</td><td></td><td></td></tr>`).join('')}</tbody></table>`;
 }
 function pageUwElect(cur){
   const e = uwElect;
   return `<div class="uwElBar">
-      <label>구분 <select id="uwElKind" class="docSel">${['사전투표','본투표',''].map(k=> `<option value="${k}"${e.kind===k ? ' selected' : ''}>${k || '표시 안 함'}</option>`).join('')}</select></label>
       <label>육아휴직 <input id="uwElLeave" inputmode="numeric" value="${esc(e.leave)}" placeholder="명"></label>
       <label>사전투표 <input id="uwElPre" inputmode="numeric" value="${esc(e.pre)}"></label>
       <label>본투표 <input id="uwElMain" inputmode="numeric" value="${esc(e.main)}"></label>
       <button type="button" class="btn sm" id="uwElPrint">🖨️ 출력 (인쇄 · PDF 저장)</button></div>
-    <p class="hint" style="margin:-2px 0 10px;">지금 조합원 ${cur.length}명으로 만들어요(파트 → 이름 순). 사전투표·본투표 인원은 비워 두면 종이에 직접 쓰면 돼요. 서명·비고 칸은 비어서 나와요.</p>
+    <p class="hint" style="margin:-2px 0 10px;">지금 조합원 ${cur.length}명으로 만들어요(파트 → 이름 순). 사전투표·본투표 인원은 비워 두면 종이에 직접 쓰면 돼요. 사전투표·본투표 서명 칸은 비어서 나와요.</p>
     <div class="uwElWrap"><div class="uwElPaper">${uwElectHtml(cur)}</div></div>`;
 }
 function bindUwElect(){
   const $ = id=> document.getElementById(id), e = uwElect;
-  const upd = ()=>{ e.kind = $('uwElKind').value; e.leave = $('uwElLeave').value.replace(/[^\d]/g,''); e.pre = $('uwElPre').value.trim(); e.main = $('uwElMain').value.trim();
+  const upd = ()=>{ e.leave = $('uwElLeave').value.replace(/[^\d]/g,''); e.pre = $('uwElPre').value.trim(); e.main = $('uwElMain').value.trim();
     const pp = document.querySelector('.uwElPaper'); if(pp) pp.innerHTML = uwElectHtml(uwMemList('cur')); };
-  ['uwElKind','uwElLeave','uwElPre','uwElMain'].forEach(id=>{ if($(id)){ $(id).oninput = upd; $(id).onchange = upd; } });
+  ['uwElLeave','uwElPre','uwElMain'].forEach(id=>{ if($(id)){ $(id).oninput = upd; $(id).onchange = upd; } });
   const pp = document.querySelector('.uwElPaper'), wr = document.querySelector('.uwElWrap');   // 휴대폰: 종이를 화면 폭에 맞게 줄여 보여 줌
   if(pp && wr){ pp.style.zoom = ''; const z = Math.min(1, (wr.clientWidth - 2) / pp.offsetWidth); if(z < 1) pp.style.zoom = Math.floor(z*1000)/1000; }
   if($('uwElPrint')) $('uwElPrint').onclick = ()=>{
     let box = document.getElementById('uwPrint'); if(box) box.remove();
     box = document.createElement('div'); box.id = 'uwPrint'; box.className = 'uwElPrint'; box.innerHTML = uwElectHtml(uwMemList('cur'));
     document.body.appendChild(box);
-    const old = document.title; document.title = '선거인 명부' + (e.kind ? `(${e.kind})` : '');
+    const old = document.title; document.title = '선거인 명부';
     document.body.classList.add('printing-uw');
     const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
