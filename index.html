@@ -1491,6 +1491,32 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-direction:column;}
 .acctFrame{border:0;width:100%;flex:1 1 auto;min-height:0;display:block;background:#f1f5f9;}
 /* 양식: 공고·신청서(임원선거 서식 · 공고·증명 서식) */
+/* A4 한 장을 꽉 채우게: 본문은 늘어나고 날짜·이름·귀중은 아래쪽으로 */
+.uwfGg,.uwfAp{display:flex;flex-direction:column;}
+.uwfAp .uwfApDate{margin-top:auto;}
+.uwfAp .uwfApTo{margin-bottom:6mm;}
+/* 출력할 때(#uwPrint 안)만 쓰는 A4 크기 — 화면에서 미리 재서 넘치면 글자를 줄임(uwfFitA4) */
+  #uwPrint.uwFormPrint .uwfGg,#uwPrint.uwFormPrint .uwfAp{height:270mm !important;min-height:0 !important;box-sizing:border-box;padding:6mm 8mm 4mm !important;overflow:hidden;}
+  #uwPrint.uwFormPrint .uwfGgT{font-size:26pt;margin:6mm 0 9mm;}
+  #uwPrint.uwFormPrint .uwfGgBody{font-size:13.5pt;line-height:2;min-height:0;}
+  #uwPrint.uwFormPrint .uwfRdBody{font-size:12pt;line-height:1.8;}
+  #uwPrint.uwFormPrint .uwfGgDate{font-size:14pt;margin-top:6mm;}
+  #uwPrint.uwFormPrint .uwfGgOrg{font-size:16pt;margin-top:6mm;}
+  #uwPrint.uwFormPrint .uwfGgSign{font-size:16pt;margin-top:3mm;margin-bottom:8mm;}
+  #uwPrint.uwFormPrint .uwfRdSigns{margin-bottom:8mm;}
+  #uwPrint.uwFormPrint .uwfApTitle{font-size:22pt;}
+  #uwPrint.uwFormPrint .uwfApT td{height:11mm;} #uwPrint.uwFormPrint .uwfApSign td{height:22mm;}
+  #uwPrint.uwFormPrint .uwfApR th,#uwPrint.uwFormPrint .uwfApR td{height:15mm;font-size:12.5pt;}
+  #uwPrint.uwFormPrint .uwfApTxt{font-size:13.5pt;line-height:2;margin:14mm 2mm 0;}
+  #uwPrint.uwFormPrint .uwfApDate{font-size:14pt;margin-bottom:12mm;}
+  #uwPrint.uwFormPrint .uwfApWho{font-size:14pt;margin-bottom:22mm;}
+  #uwPrint.uwFormPrint .uwfApTo{font-size:16pt;margin-bottom:14mm;}
+  #uwPrint.uwFormPrint .uwfRecom .uwfApR th,#uwPrint.uwFormPrint .uwfRecom .uwfApR td{height:9mm;font-size:11pt;}
+  #uwPrint.uwFormPrint .uwfRecom .uwfApT td{height:9mm;} #uwPrint.uwFormPrint .uwfRecom .uwfApSign td{height:15mm;}
+  #uwPrint.uwFormPrint .uwfRecom .uwfApTxt{margin:5mm 2mm 4mm;font-size:12pt;}
+  #uwPrint.uwFormPrint .uwfRcL th,#uwPrint.uwFormPrint .uwfRcL td{height:7.4mm;}
+  #uwPrint.uwFormPrint .uwfRecom .uwfApDate{margin-bottom:5mm;} #uwPrint.uwFormPrint .uwfRecom .uwfApTo{margin-bottom:4mm;font-size:14pt;}
+#uwPrint.uwFormPrint .uwfGgBody{flex:1 0 auto;}
 .uwfGg{display:flex;flex-direction:column;}
 .uwfGgT{text-align:center;font-size:24pt;font-weight:900;letter-spacing:4pt;margin:6mm 0 7mm;}
 .uwfGgBody{font-size:12pt;line-height:1.72;min-height:120mm;white-space:pre-wrap;}
@@ -10760,6 +10786,19 @@ function uwFormFit(){
   doc.style.zoom = ''; if(window.innerWidth > 700) return;
   const z = Math.min(1, (doc.clientWidth - 4) / pg.offsetWidth); if(z < 1) doc.style.zoom = Math.floor(z*1000)/1000;
 }
+// 임원선거·공고증명 서식: A4 한 장(270mm)에 맞게 — 넘치면 본문 글자를 조금씩 줄임, 남으면 그대로(본문이 늘어나 아래까지 채움)
+function uwfFitA4(box){
+  const pages = [...box.querySelectorAll('.uwfGg, .uwfAp')]; if(!pages.length) return;
+  const st = box.style.cssText; box.style.cssText = 'display:block !important;position:fixed;left:-4000px;top:0;visibility:hidden;width:186mm;';
+  pages.forEach(pg=>{
+    const over = ()=> pg.scrollHeight > pg.clientHeight + 1;
+    const body = pg.querySelector('.uwfGgBody');
+    if(body){ let fs = parseFloat(getComputedStyle(body).fontSize), lh = 2, n = 0;   // 1) 공고 본문: 13.5pt → 11pt까지, 줄 간격 2 → 1.65
+      while(over() && n < 30 && (fs > 14.2 || lh > 1.5)){ if(lh > 1.5) lh -= 0.05; else if(fs > 14.2) fs *= 0.97; body.style.fontSize = fs + 'px'; body.style.lineHeight = String(lh); n++; } }
+    if(over()){ const r = Math.max(0.6, (pg.clientHeight - 4) / pg.scrollHeight); [...pg.children].forEach(c=> c.style.zoom = r.toFixed(3)); }   // 2) 그래도 넘치면 쪽 전체를 같은 비율로 줄임
+  });
+  box.style.cssText = st;
+}
 function uwFormPrint(){
   const doc = document.getElementById('uwfDoc'); if(!doc) return;
   let box = document.getElementById('uwPrint'); if(box) box.remove();
@@ -10768,6 +10807,7 @@ function uwFormPrint(){
   document.body.appendChild(box);
   box.querySelectorAll('input[type=file]').forEach(e=> e.remove());
   if(uwForm.kind==='gs' || uwForm.kind==='notice') box.classList.add('uwFormLand');
+  if(UWF_SETS[uwForm.kind]) uwfFitA4(box);
   const old = document.title; document.title = UWF_SETS[uwForm.kind] ? (uwForm.page==='all' ? UWF_SETS[uwForm.kind].label.replace(/^\S+\s/, '') : UWF_SETS[uwForm.kind].pages[uwForm.page][1] + (uwForm.kind==='elect' && /apply|recom/.test(UWF_SETS[uwForm.kind].pages[uwForm.page][0]) ? `(${uwForm.v.pos})` : '')) : uwForm.kind==='rec' ? '근무유공자 추천서' : uwForm.kind==='sch' ? '장학생 추천서' : uwForm.kind==='gs' ? '경조사비 지급기준' : uwForm.kind==='notice' ? `노동조합현황 정기 통보서(${uwForm.year})` : '공적조서';
   document.body.classList.add('printing-uw');
   const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
