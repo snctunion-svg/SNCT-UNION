@@ -1645,6 +1645,9 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calMonthHd{margin:16px 0 8px;font-size:14px;font-weight:800;}
 .calMonthDate{font-size:12px;font-weight:800;color:var(--text-muted);margin:8px 0 4px;}
 .calPop{max-width:420px;}
+.calWhoRow{display:flex;gap:6px;margin:2px 0 6px;flex-wrap:wrap;}
+.calWho{border:1px solid #fbcfe8;background:#fff;color:#9d174d;border-radius:16px;padding:5px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.calWho.on{background:#db2777;border-color:#db2777;color:#fff;}
 .calDayBody{padding:12px;max-height:55vh;overflow:auto;}
 .sheetPopHd .calHolTag{font-size:12px;color:#dc2626;font-weight:700;margin-left:4px;}
 .calForm{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px;}
@@ -5053,33 +5056,44 @@ async function calSaveMonth(k, list){
   await db.doc('meta/cal_' + k).set({json: JSON.stringify(list), at: Date.now()});
 }
 function calCatName(c){ const f = CAL_CATS.find(x=> x[0]===c); return f ? f[1] : '일반'; }
-function calDayEvents(ds){ return (calData[ds.slice(0,7)] || []).filter(e=> e.d===ds); }
+function calEnd(e){ return e.e && e.e > e.d ? e.e : e.d; }   // 종료일(없으면 시작일 하루)
+function calOn(e, ds){ return e.d <= ds && ds <= calEnd(e); }
+function calPrevKey(y, m){ return m===1 ? calKey(y-1, 12) : calKey(y, m-1); }
+const calPrevLoad = {};
+function calMonthEvents(y, m){   // 이번 달 일정 + 앞 달에 시작해서 이번 달까지 이어지는 일정
+  const k = calKey(y, m), pk = calPrevKey(y, m), first = dstr(y, m, 1);
+  if(!calData[pk] && db && !calPrevLoad[pk]){ calPrevLoad[pk] = 1; calLoadMonth(pk).then(()=>{ if(VIEW==='uwcal') scheduleRender(); }); }
+  return (calData[k] || []).concat((calData[pk] || []).filter(e=> calEnd(e) >= first));
+}
+function calWho(e){ return e.who ? `[${e.who}] ` : ''; }
+function calRangeLabel(e){ if(calEnd(e)===e.d) return ''; const f = x=>{ const [,mm,dd] = x.split('-').map(Number); return `${mm}/${dd}`; }; return `${f(e.d)} ~ ${f(calEnd(e))}`; }
+function calDayEvents(ds){ const [y,m] = ds.split('-').map(Number); return calMonthEvents(y, m).filter(e=> calOn(e, ds)); }
 function calDateLabel(ds){ const [y,m,d] = ds.split('-').map(Number); const w = '일월화수목금토'[new Date(y, m-1, d).getDay()]; return `${m}월 ${d}일 (${w})`; }
 function calItemHtml(e){
   return `<button type="button" class="calItem" data-cal-ev="${esc(e.id)}"><span class="calItemBar calD-gen"></span><span class="calItemMain">
-    <div class="calItemT">${esc(e.title||'(제목 없음)')}</div>
-    ${e.t ? `<div class="calItemS">🕘 ${esc(e.t)}</div>` : ''}
+    <div class="calItemT">${esc(calWho(e) + (e.title||'(제목 없음)'))}</div>
+    ${e.t || calRangeLabel(e) ? `<div class="calItemS">${calRangeLabel(e) ? `📅 ${esc(calRangeLabel(e))}` : ''}${calRangeLabel(e) && e.t ? ' · ' : ''}${e.t ? `🕘 ${esc(e.t)}` : ''}</div>` : ''}
     ${e.memo ? `<div class="calItemM">${esc(e.memo)}</div>` : ''}</span></button>`;
 }
 function pageUwCal(){
   subscribeCal();
-  const {y, m} = calYm, k = calKey(y, m), list = calData[k] || [];
+  const {y, m} = calYm, k = calKey(y, m), list = calMonthEvents(y, m);
   if(calSel.slice(0,7)!==k) calSel = (k===todayStr().slice(0,7)) ? todayStr() : dstr(y, m, 1);
   const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate(), today = todayStr();
   const cells = [];
   for(let i = 0; i < first; i++) cells.push('<div class="calCell out"></div>');
   for(let d = 1; d <= days; d++){
-    const ds = dstr(y, m, d), w = (first + d - 1) % 7, ev = list.filter(e=> e.d===ds), hol = holidays[ds];
+    const ds = dstr(y, m, d), w = (first + d - 1) % 7, ev = list.filter(e=> calOn(e, ds)).sort((a,b)=> (a.d===b.d ? 0 : a.d < b.d ? -1 : 1) || String(a.t||'').localeCompare(String(b.t||''))), hol = holidays[ds];
     const cls = ['calCell', w===0 ? 'sun' : w===6 ? 'sat' : '', hol ? 'hol' : '', ds===today ? 'today' : '', ds===calSel ? 'sel' : ''].filter(Boolean).join(' ');
     cells.push(`<button type="button" class="${cls}" data-cal-day="${ds}" aria-label="${esc(calDateLabel(ds))} 일정 ${ev.length}개">
       <span class="calNumRow"><span class="calNum">${d}</span>${hol ? `<span class="calHol">${esc(hol)}</span>` : ''}</span>
-      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen">* ${e.t ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}
+      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen">* ${e.t && e.d===ds ? `<b>${esc(e.t)}</b>` : ''}${esc(calWho(e) + (e.title||''))}</span>`).join('')}
       ${ev.length > 3 ? `<span class="calMore">+${ev.length-3}개 더</span>` : ''}
       ${ev.length ? `<span class="calDots">${ev.slice(0,4).map(()=> `<i class="calD-gen"></i>`).join('')}</span>` : ''}
     </button>`);
   }
   while(cells.length % 7) cells.push('<div class="calCell out"></div>');
-  const dayEv = calDayPop ? list.filter(e=> e.d===calDayPop) : [];
+  const dayEv = calDayPop ? list.filter(e=> calOn(e, calDayPop)) : [];
   const dayPop = (calDayPop && !calEdit) ? `<div class="sheetPopScrim" id="calDayScrim"><div class="sheetPop calPop" role="dialog" aria-label="${esc(calDateLabel(calDayPop))} 일정">
       <div class="sheetPopHd"><b>${esc(calDateLabel(calDayPop))}${holidays[calDayPop] ? ` <span class="calHolTag">${esc(holidays[calDayPop])}</span>` : ''}</b><button type="button" class="sheetPopX" id="calDayClose" aria-label="닫기">✕</button></div>
       <div class="calDayBody"><div class="calList">${dayEv.length ? dayEv.map(calItemHtml).join('') : '<div class="calEmpty">이 날은 일정이 없어요.</div>'}</div></div>
@@ -5088,9 +5102,10 @@ function pageUwCal(){
   const pop = calEdit ? `<div class="sheetPopScrim" id="calScrim"><div class="sheetPop calPop" role="dialog" aria-label="일정 ${calEdit.id ? '수정' : '추가'}">
       <div class="sheetPopHd"><b>${!canEdit ? '일정 보기' : calEdit.id ? '일정 수정' : '일정 추가'}</b><button type="button" class="sheetPopX" id="calClose" aria-label="닫기">✕</button></div>
       <div class="calForm">
-        <label><span>날짜</span><input type="date" id="calFD" value="${esc(calEdit.d)}"></label>
+        <label><span>시작</span><input type="date" id="calFD" value="${esc(calEdit.d)}"></label>
+        <label><span>종료</span><input type="date" id="calFE" value="${esc(calEnd(calEdit))}"></label>
         <label><span>시간 (선택)</span><input type="time" id="calFT" value="${esc(calEdit.t||'')}"></label>
-        <label class="full"><span>제목</span><input type="text" id="calFTitle" maxlength="60" placeholder="예: 임금교섭 3차" value="${esc(calEdit.title||'')}"></label>
+        <label class="full"><span>제목</span><span class="calWhoRow">${['위원장','사무국','기타'].map(w=> `<button type="button" class="calWho${calEdit.who===w ? ' on' : ''}" data-cal-who="${w}">${w}</button>`).join('')}</span><input type="text" id="calFTitle" maxlength="60" value="${esc(calEdit.title||'')}"></label>
         <label class="full"><span>메모 (장소·참석자 등)</span><textarea id="calFMemo" maxlength="1000">${esc(calEdit.memo||'')}</textarea></label>
       </div>
       <div class="calPopBtns">${calEdit.id ? '<button type="button" class="btn ghost sm editor-only" id="calDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="calCancel">${canEdit ? '취소' : '닫기'}</button><button type="button" class="btn editor-only" id="calSave">💾 저장</button></div>
@@ -5108,7 +5123,7 @@ function pageUwCal(){
   <div class="calGrid" style="--calRows:${cells.length/7}">${'일월화수목금토'.split('').map((w,i)=> `<div class="calDow${i===0 ? ' sun' : i===6 ? ' sat' : ''}">${w}</div>`).join('')}${cells.join('')}</div>
   ${dayPop}${pop}`;
 }
-function calOpen(ev){ if(!ev && !canEdit) return; calEdit = ev ? Object.assign({}, ev) : {d: calDayPop || calSel, t:'', title:'', memo:'', c:'gen'}; calEdit.back = calDayPop; calDayPop = ''; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
+function calOpen(ev){ if(!ev && !canEdit) return; calEdit = ev ? Object.assign({}, ev) : {d: calDayPop || calSel, t:'', title:'', memo:'', c:'gen', who:''}; calEdit.d0 = ev ? ev.d : ''; calEdit.back = calDayPop; calDayPop = ''; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
 function calClose(){ calDayPop = (calEdit && calEdit.back) || ''; calEdit = null; render(); }   // 날짜 팝업에서 열었으면 그 팝업으로 돌아감
 function calDayClose(){ calDayPop = ''; render(); }
 function calGo(dm){ let {y, m} = calYm; m += dm; if(m < 1){ m = 12; y--; } if(m > 12){ m = 1; y++; } calYm = {y, m}; calSel = ''; render(); }
@@ -5121,11 +5136,13 @@ function bindUwCal(){
   if($('calAddDay')) $('calAddDay').onclick = ()=> calOpen(null);
   document.querySelectorAll('[data-cal-day]').forEach(b=> b.onclick = ()=>{ calSel = calDayPop = b.dataset.calDay; render(); });   // 날짜를 누르면 그날 일정 팝업
   if($('calDayScrim')){ $('calDayScrim').onclick = e=>{ if(e.target.id==='calDayScrim') calDayClose(); }; $('calDayClose').onclick = calDayClose; $('calDayClose2').onclick = calDayClose; }
-  document.querySelectorAll('[data-cal-ev]').forEach(b=> b.onclick = ()=>{ const k = calKey(calYm.y, calYm.m); const e = (calData[k]||[]).find(x=> x.id===b.dataset.calEv); if(e) calOpen(e); });
+  document.querySelectorAll('[data-cal-ev]').forEach(b=> b.onclick = ()=>{ const e = calMonthEvents(calYm.y, calYm.m).find(x=> x.id===b.dataset.calEv); if(e) calOpen(e); });
   if(!calEdit) return;
   const scrim = $('calScrim');
   if(scrim) scrim.onclick = e=>{ if(e.target===scrim) calClose(); };
   $('calClose').onclick = calClose; $('calCancel').onclick = calClose;
+  document.querySelectorAll('[data-cal-who]').forEach(b=> b.onclick = ()=>{ calEdit.who = calEdit.who===b.dataset.calWho ? '' : b.dataset.calWho; document.querySelectorAll('[data-cal-who]').forEach(x=> x.classList.toggle('on', x.dataset.calWho===calEdit.who)); });   // 위원장·사무국·기타(다시 누르면 선택 해제)
+  if($('calFD') && $('calFE')){ let d0 = $('calFD').value; $('calFD').onchange = ()=>{ const fe = $('calFE'), nd = $('calFD').value; if(!fe.value || fe.value===d0 || fe.value < nd) fe.value = nd; d0 = nd; }; }   // 시작을 바꾸면 종료도 맞춰 줌(하루짜리면 같이 움직임)
   if($('calDel')) $('calDel').onclick = async ()=>{
     if(!confirm('이 일정을 지울까요?')) return;
     const k = calEdit.d0 ? calEdit.d0.slice(0,7) : calEdit.d.slice(0,7);
@@ -5134,10 +5151,12 @@ function bindUwCal(){
   };
   $('calSave').onclick = async ()=>{
     const d = $('calFD').value, t = $('calFT').value, title = $('calFTitle').value.trim(), memo = $('calFMemo').value.trim();
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ showToast('날짜를 골라 주세요.'); return; }
+    let en = $('calFE').value || d;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ showToast('시작 날짜를 골라 주세요.'); return; }
+    if(en < d){ showToast('종료 날짜가 시작보다 빨라요.'); return; }
     if(!title){ showToast('제목을 적어 주세요.'); $('calFTitle').focus(); return; }
-    const old = calEdit.id ? (calData[calKey(calYm.y, calYm.m)]||[]).find(x=> x.id===calEdit.id) : null;
-    const ev = {id: calEdit.id || ('e' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)), d, t, title, memo, c: calEdit.c || 'gen'};
+    const old = calEdit.id && calEdit.d0 ? ((await calLoadMonth(calEdit.d0.slice(0,7)))||[]).find(x=> x.id===calEdit.id) : null;
+    const ev = {id: calEdit.id || ('e' + Date.now().toString(36) + Math.random().toString(36).slice(2,6)), d, e: en > d ? en : '', t, who: calEdit.who || '', title, memo, c: calEdit.c || 'gen'};
     const btn = $('calSave'); btn.disabled = true;
     try{
       const nk = d.slice(0,7), ok = old ? old.d.slice(0,7) : nk;
