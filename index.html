@@ -4723,11 +4723,11 @@ function pageHub(list){
 const OFC_KNOWN = {'20261026-083258': {no:'인노대협 제2026-36호', date:'2026-10-26', from:'한국노총인천본부 연안대표자협의회', title:'연안협의회 월례회의 (박상규 위원장 전별금)'}};   // 파일 이름으로 알아서 채움
 const DOC_BOXES = {
   uwofc: {name:'협의회 공문서', unit:'공문서', listDoc:'ofcList', pagePre:'ofc', titleKey:'title', titleLabel:'제목', required:'제목을 적어 주세요.',
-    fields:[['date','시행일자','date'],['no','문서번호','text','예: 인노대협 제2026-36호'],['title','제목','text','예: 연안협의회 월례회의',1],['from','보낸 곳','text','예: 한국노총인천본부 연안대표자협의회',1],['memo','메모 (선택)','area','',1]],
-    sub: o=> [o.no, o.from], right: o=> `${o.pages||0}쪽`},
+    fields:[['date','시행일자','date'],['title','제목','text','',1],['memo','메모 (선택)','area','',1]],   // 시행일자·제목·메모만
+    sub: o=> [o.memo ? '📝 ' + o.memo : ''], right: o=> `${o.pages||0}쪽`},
   uwrcpt: {name:'영수증', unit:'영수증', listDoc:'rcptList', pagePre:'rcpt', titleKey:'title', titleLabel:'사용처·내용', required:'사용처·내용을 적어 주세요.',
-    fields:[['date','사용일','date'],['amount','금액(원)','money','예: 35000'],['title','사용처·내용','text','예: 대의원대회 다과 구입',1],['method','결제','pick','',0,['','법인카드','체크카드','현금','계좌이체']],['memo','메모 (선택)','area','',1]],
-    sub: o=> [o.method, o.memo ? '📝' : ''], right: o=> o.amount ? `${Number(o.amount).toLocaleString('ko-KR')}원` : '', total: true}
+    fields:[['date','사용일','date'],['amount','금액(원)','money',''],['title','사용처·내용','text','',1],['memo','메모 (선택)','area','',1]],   // 결제 칸 없앰
+    sub: o=> [o.memo ? '📝 ' + o.memo : ''], right: o=> o.amount ? `${Number(o.amount).toLocaleString('ko-KR')}원` : '', total: true}
 };
 const dbx = {};   // view -> {list, err, view, imgs, form, busy}
 function dbxS(v){ return dbx[v] || (dbx[v] = {list:null, err:'', view:null, imgs:{}, form:null, busy:''}); }
@@ -4870,7 +4870,7 @@ function pageDocBox(v){
     </div></div>` : '';
   const vo = st.view && list.find(x=> x.id===st.view), imgs = vo && st.imgs[vo.id];
   const viewer = vo ? `<div class="ofcViewer" id="dbxViewer" role="dialog" aria-label="${esc(vo[c.titleKey]||c.unit)}">
-      <div class="ofcVBar"><div class="ofcVT"><b>${esc(vo[c.titleKey]||'(제목 없음)')}</b><span>${[ofcDateLabel(vo.date), ...c.sub(vo).filter(x=> x && x!=='📝').map(esc), esc(c.right(vo))].filter(Boolean).join(' · ')}</span></div>
+      <div class="ofcVBar"><div class="ofcVT"><b>${esc(vo[c.titleKey]||'(제목 없음)')}</b><span>${[ofcDateLabel(vo.date), ...c.sub(vo).filter(x=> x && !String(x).startsWith('📝')).map(esc), esc(c.right(vo))].filter(Boolean).join(' · ')}</span></div>
         <div class="ofcVBtns"><button type="button" class="btn sm" id="dbxPrint">🖨️ 출력</button><button type="button" class="btn ghost sm editor-only" id="dbxEdit">✏️ 정보</button><button type="button" class="btn ghost sm editor-only" id="dbxDel">🗑 삭제</button><button type="button" class="btn ghost sm" id="dbxClose">✕ 닫기</button></div></div>
       ${vo.memo ? `<div class="ofcMemo">📝 ${esc(vo.memo)}</div>` : ''}
       <div class="ofcPages">${imgs ? imgs.map((u,i)=> u ? `<img src="${u}" alt="${i+1}쪽">` : `<div class="hint">${i+1}쪽을 읽지 못했어요.</div>`).join('') : '<div class="hint" style="padding:30px;text-align:center;">불러오는 중…</div>'}</div>
