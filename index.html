@@ -1490,6 +1490,9 @@ td.daycell.filled{border-color:rgba(255,255,255,.7);}
 /* ===== UNION > 회계(account.html을 화면 가득) ===== */
 main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-direction:column;}
 .acctFrame{border:0;width:100%;flex:1 1 auto;min-height:0;display:block;background:#f1f5f9;}
+/* 양식 출력 전에 크기를 재는 동안만(인쇄 때와 같은 모양) */
+#uwPrint.uwfMeasure .uwfPage{box-shadow:none;padding:0;min-height:0;width:186mm;max-width:none;line-height:1.45;font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;}
+#uwPrint.uwfMeasure.uwFormLand .uwfPage,#uwPrint.uwfMeasure .uwfPage.uwfLand{width:277mm;}
 /* 조합원 명부 > 선거인 명부 */
 .uwElBar{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;margin:0 0 8px;font-size:13px;font-weight:700;}
 .uwElBar label{display:flex;align-items:center;gap:5px;}
@@ -10819,6 +10822,20 @@ function uwfFitA4(box){
   });
   box.style.cssText = st;
 }
+// 양식 출력: 모든 서류를 A4 한 장(가로 양식은 가로 한 장)에 자동으로 맞춤 — 넘치면 그 쪽만 같은 비율로 줄임
+function uwfFitAll(box){
+  const pages = [...box.querySelectorAll('.uwfPage')].filter(pg=> !pg.matches('.uwfGg, .uwfAp')); if(!pages.length) return;
+  const mm = (()=>{ const d = document.createElement('div'); d.style.cssText = 'position:absolute;width:100mm;height:0;'; document.body.appendChild(d); const v = d.getBoundingClientRect().width / 100; d.remove(); return v || 3.78; })();
+  const st = box.style.cssText, land = box.classList.contains('uwFormLand');
+  box.classList.add('uwfMeasure'); box.style.cssText = `display:block !important;position:fixed;left:-5000px;top:0;visibility:hidden;width:${land ? 277 : 186}mm;`;
+  pages.forEach(pg=>{
+    [...pg.children].forEach(c=> c.style.zoom = '');
+    const L = land || pg.classList.contains('uwfLand'), W = (L ? 277 : 186) * mm, H = (L ? 186 : 271) * mm;
+    const r = Math.min(1, W / Math.max(pg.scrollWidth, pg.offsetWidth), H / Math.max(pg.scrollHeight, pg.offsetHeight));
+    if(r < 0.995){ const z = (Math.floor(r * 0.98 * 1000) / 1000).toString(); [...pg.children].forEach(c=> c.style.zoom = z); }   // 쪽 안의 내용을 같은 비율로
+  });
+  box.classList.remove('uwfMeasure'); box.style.cssText = st;
+}
 function uwFormPrint(){
   const doc = document.getElementById('uwfDoc'); if(!doc) return;
   let box = document.getElementById('uwPrint'); if(box) box.remove();
@@ -10828,6 +10845,7 @@ function uwFormPrint(){
   box.querySelectorAll('input[type=file]').forEach(e=> e.remove());
   if(uwForm.kind==='gs' || uwForm.kind==='notice') box.classList.add('uwFormLand');
   if(UWF_SETS[uwForm.kind]) uwfFitA4(box);
+  uwfFitAll(box);
   const old = document.title; document.title = UWF_SETS[uwForm.kind] ? (uwForm.page==='all' ? UWF_SETS[uwForm.kind].label.replace(/^\S+\s/, '') : UWF_SETS[uwForm.kind].pages[uwForm.page][1] + (uwForm.kind==='elect' && /apply|recom/.test(UWF_SETS[uwForm.kind].pages[uwForm.page][0]) ? `(${uwForm.v.pos})` : '')) : uwForm.kind==='rec' ? '근무유공자 추천서' : uwForm.kind==='sch' ? '장학생 추천서' : uwForm.kind==='gs' ? '경조사비 지급기준' : uwForm.kind==='notice' ? `노동조합현황 정기 통보서(${uwForm.year})` : '공적조서';
   document.body.classList.add('printing-uw');
   const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
