@@ -5084,7 +5084,7 @@ function calMonthEvents(y, m){   // 이번 달 일정 + 앞 달에 시작해서 
   return (calData[k] || []).concat((calData[pk] || []).filter(e=> calEnd(e) >= first));
 }
 function calWhoCls(e){ return e.who==='위원장' ? ' calW-chief' : e.who==='사무국' ? ' calW-office' : e.who==='기타' ? ' calW-etc' : ''; }   // 위원장 분홍 · 사무국 노랑 · 기타 흰색
-function calWho(e){ return e.who ? `[${e.who}] ` : ''; }
+function calWho(e){ return ''; }   // [위원장] 같은 글자는 안 붙임 — 색(위원장 분홍·사무국 노랑·기타 흰색)으로 구분
 function calRangeLabel(e){ if(calEnd(e)===e.d) return ''; const f = x=>{ const [,mm,dd] = x.split('-').map(Number); return `${mm}/${dd}`; }; return `${f(e.d)} ~ ${f(calEnd(e))}`; }
 function calDayEvents(ds){ const [y,m] = ds.split('-').map(Number); return calMonthEvents(y, m).filter(e=> calOn(e, ds)); }
 function calDateLabel(ds){ const [y,m,d] = ds.split('-').map(Number); const w = '일월화수목금토'[new Date(y, m-1, d).getDay()]; return `${m}월 ${d}일 (${w})`; }
