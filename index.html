@@ -1680,7 +1680,7 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calPopBtns .spacer{flex:1 1 auto;}
 @media (max-width:700px){
   .calCell{min-height:max(64px, calc((100dvh - 330px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / var(--calRows,5)));padding:3px 2px 4px;}   /* 휴대폰: 달력이 화면 아래까지 차게 */
-  .calGrid .calEv{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;word-break:break-all;font-size:10px;line-height:1.2;padding:0 1px;}   /* 휴대폰도 * 일정 글자(2줄까지) */
+  .calGrid .calEv{display:block;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:10px;line-height:1.35;padding:0 2px !important;margin:0 0 1px !important;}   /* 휴대폰: 한 줄에 앞 몇 글자만, 누르면 팝업 */   /* 휴대폰도 * 일정 글자(2줄까지) */
   .calMore{font-size:9.5px;padding-left:1px;}
   .calDots{display:none;}
   .calHol{font-size:9px;text-align:center;}
