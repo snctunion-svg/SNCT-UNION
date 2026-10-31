@@ -96,7 +96,9 @@ const $ = id=> document.getElementById(id);
 const pad = n=> String(n).padStart(2,'0'), ds = (y,m,d)=> `${y}-${pad(m)}-${pad(d)}`;
 const todayStr = ()=>{ const t = new Date(); return ds(t.getFullYear(), t.getMonth()+1, t.getDate()); };
 const esc = s=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let ym = (()=>{ const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();
+let ym = (()=>{ try{ const o = JSON.parse(localStorage.getItem('ohwonil_ym') || 'null'); if(o && o.y > 2000 && o.m >= 1 && o.m <= 12) return {y:o.y, m:o.m}; }catch(e){} const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();   // 보던 달을 기억
+const keep = ()=>{ try{ localStorage.setItem('ohwonil_ym', JSON.stringify(ym)); }catch(e){} };
+const go = dm=>{ ym = dm < 0 ? (ym.m===1 ? {y:ym.y-1, m:12} : {y:ym.y, m:ym.m-1}) : (ym.m===12 ? {y:ym.y+1, m:1} : {y:ym.y, m:ym.m+1}); keep(); render(); };
 const data = {}, unsubs = {}; let holidays = {}, popDay = '', fs = null, F = null;
 const key = (y,m)=> `${y}-${pad(m)}`, prevKey = (y,m)=> m===1 ? key(y-1,12) : key(y,m-1);
 const end = e=> e.e && e.e > e.d ? e.e : e.d, on = (e,d)=> e.d <= d && d <= end(e);
@@ -136,9 +138,13 @@ function renderPop(){
   $('scrim').onclick = e=>{ if(e.target.id==='scrim'){ popDay = ''; renderPop(); } };
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && popDay){ popDay = ''; renderPop(); } });
-$('prev').onclick = ()=>{ ym = ym.m===1 ? {y:ym.y-1, m:12} : {y:ym.y, m:ym.m-1}; render(); };
-$('next').onclick = ()=>{ ym = ym.m===12 ? {y:ym.y+1, m:1} : {y:ym.y, m:ym.m+1}; render(); };
-$('today').onclick = ()=>{ const t = new Date(); ym = {y:t.getFullYear(), m:t.getMonth()+1}; render(); };
+$('prev').onclick = ()=> go(-1);
+$('next').onclick = ()=> go(1);
+$('today').onclick = ()=>{ const t = new Date(); ym = {y:t.getFullYear(), m:t.getMonth()+1}; keep(); render(); };
+{ let sx = 0, sy = 0, st = 0; const g = $('grid');   // 휴대폰: 달력을 옆으로 밀면 다음/이전 달
+  g.addEventListener('touchstart', e=>{ const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); }, {passive:true});
+  g.addEventListener('touchend', e=>{ const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800){ e.preventDefault(); go(dx < 0 ? 1 : -1); } }); }
 render();
 try{
   const [A, Fm] = await Promise.all([import(SDK + 'firebase-app.js'), import(SDK + 'firebase-firestore.js')]);

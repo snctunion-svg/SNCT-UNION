@@ -5040,7 +5040,8 @@ function bindDocBox(v){
 }
 // ===== 캘린더: 월별 일정. 누구나 보고(배포용), UNION만 입력·수정. 클라우드 meta/cal_YYYY-MM 에 달마다 저장 =====
 const CAL_CATS = [['gen','일반'],['meet','회의'],['nego','교섭'],['event','행사'],['edu','교육'],['etc','기타']];
-let calYm = (()=>{ const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();
+let calYm = (()=>{ try{ const o = JSON.parse(localStorage.getItem('snct_cal_ym') || 'null'); if(o && o.y > 2000 && o.m >= 1 && o.m <= 12) return {y:o.y, m:o.m}; }catch(e){} const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();   // 보던 달을 기억(다시 열어도 그 달)
+function calKeepYm(){ try{ localStorage.setItem('snct_cal_ym', JSON.stringify(calYm)); }catch(e){} }
 let calSel = todayStr();            // 고른 날짜
 let calData = {};                   // 'YYYY-MM' -> [일정]
 let calKeySub = '';                 // 지금 구독 중인 달
@@ -5145,13 +5146,18 @@ function pageUwCal(){
 function calOpen(ev){ if(!ev && !canEdit) return; calEdit = ev ? Object.assign({}, ev) : {d: calDayPop || calSel, t:'', title:'', memo:'', c:'gen', who:''}; calEdit.d0 = ev ? ev.d : ''; calEdit.back = calDayPop; calDayPop = ''; render(); const t = document.getElementById('calFTitle'); if(t && !ev) setTimeout(()=> t.focus(), 30); }
 function calClose(){ calDayPop = (calEdit && calEdit.back) || ''; calEdit = null; render(); }   // 날짜 팝업에서 열었으면 그 팝업으로 돌아감
 function calDayClose(){ calDayPop = ''; render(); }
-function calGo(dm){ let {y, m} = calYm; m += dm; if(m < 1){ m = 12; y--; } if(m > 12){ m = 1; y++; } calYm = {y, m}; calSel = ''; render(); }
+function calGo(dm){ let {y, m} = calYm; m += dm; if(m < 1){ m = 12; y--; } if(m > 12){ m = 1; y++; } calYm = {y, m}; calKeepYm(); calSel = ''; render(); }
 function bindUwCal(){
   const $ = id=> document.getElementById(id);
   if($('calPrev')) $('calPrev').onclick = ()=> calGo(-1);
   if($('calNext')) $('calNext').onclick = ()=> calGo(1);
-  if($('calToday')) $('calToday').onclick = ()=>{ const t = new Date(); calYm = {y:t.getFullYear(), m:t.getMonth()+1}; calSel = todayStr(); render(); };
+  if($('calToday')) $('calToday').onclick = ()=>{ const t = new Date(); calYm = {y:t.getFullYear(), m:t.getMonth()+1}; calKeepYm(); calSel = todayStr(); render(); };
   if($('calAdd')) $('calAdd').onclick = ()=> calOpen(null);
+  const grid = document.querySelector('.calGrid');   // 휴대폰: 달력을 옆으로 밀면 다음/이전 달
+  if(grid){ let sx = 0, sy = 0, st = 0;
+    grid.addEventListener('touchstart', e=>{ const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); }, {passive:true});
+    grid.addEventListener('touchend', e=>{ const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800){ e.preventDefault(); calGo(dx < 0 ? 1 : -1); } }); }
   if($('calAddDay')) $('calAddDay').onclick = ()=> calOpen(null);
   document.querySelectorAll('[data-cal-day]').forEach(b=> b.onclick = ()=>{ calSel = calDayPop = b.dataset.calDay; render(); });   // 날짜를 누르면 그날 일정 팝업
   if($('calDayScrim')){ $('calDayScrim').onclick = e=>{ if(e.target.id==='calDayScrim') calDayClose(); }; $('calDayClose').onclick = calDayClose; $('calDayClose2').onclick = calDayClose; }
@@ -5182,7 +5188,8 @@ function bindUwCal(){
       if(old && ok!==nk){ await calSaveMonth(ok, (await calLoadMonth(ok)).filter(x=> x.id!==ev.id)); }
       const list = (await calLoadMonth(nk)).filter(x=> x.id!==ev.id); list.push(ev); await calSaveMonth(nk, list);
       showToast('일정을 저장했어요.');
-      const back = calEdit.back; calEdit = null; calSel = d; calDayPop = back ? d : ''; const [yy, mm] = d.split('-').map(Number); calYm = {y:yy, m:mm}; render();
+      const back = calEdit.back; calEdit = null; calSel = d; calDayPop = back ? d : '';
+      render();   // 보고 있던 달 그대로(다른 달로 넘어가지 않음)
     }catch(e){ btn.disabled = false; showToast('저장하지 못했어요: ' + (e.message||e)); }
   };
 }
