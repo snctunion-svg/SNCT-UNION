@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oh Won-il</title>
+<meta name="theme-color" content="#db2777">
+<link rel="icon" type="image/png" href="union-icon-192.png">
+<link rel="apple-touch-icon" href="union-apple-icon.png">
+<meta name="apple-mobile-web-app-title" content="Oh Won-il">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--pink:#db2777;--pink-d:#9d174d;--pink-s:#fdf2f8;--pink-l:#fbcfe8;--bg:#f1f5f9;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;--card:#fff;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--bg:#0c1119;--line:#2c3646;--text:#e5e9f0;--muted:#8b96a8;--card:#161d2b;--pink-s:#2a1320;} }
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;-webkit-text-size-adjust:100%;}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:#fde2ec;border-bottom:3px solid #ec4899;}
+header h1{margin:0;font-size:19px;display:flex;align-items:center;gap:8px;color:#111;letter-spacing:.3px;}
+header h1 .appLogo{width:40px;height:28px;}
+header .sub{font-size:12px;color:#9d174d;font-weight:700;}
+header .live{margin-left:auto;font-size:11.5px;color:#64748b;display:flex;align-items:center;gap:5px;}
+header .live i{width:8px;height:8px;border-radius:50%;background:#94a3b8;display:inline-block;}
+header .live.on i{background:#16a34a;}
+main{max-width:1200px;margin:0 auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));}
+.top{display:flex;align-items:center;gap:6px;margin:0 0 10px;flex-wrap:wrap;}
+.nav button,.today{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;height:36px;min-width:36px;font-size:18px;cursor:pointer;}
+.today{font-size:13px;font-weight:700;color:var(--pink);border-color:var(--pink-l);padding:0 12px;}
+.ym{font-size:20px;font-weight:800;min-width:120px;text-align:center;}
+.nav{display:flex;align-items:center;gap:4px;}
+.legend{margin-left:auto;display:flex;gap:10px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.dow{background:var(--card);text-align:center;font-size:12.5px;font-weight:800;padding:8px 0;color:var(--muted);}
+.dow.sun{color:#dc2626;} .dow.sat{color:#2563eb;}
+.cell{background:var(--card);min-height:max(108px, calc((100dvh - 230px) / var(--rows,5)));padding:5px 5px 6px;display:flex;flex-direction:column;gap:2px;min-width:0;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;}
+.cell:hover{background:var(--pink-s);}
+.cell.out{background:var(--bg);cursor:default;}
+.num{font-size:13.5px;font-weight:800;width:24px;height:24px;line-height:24px;text-align:center;border-radius:12px;}
+.row{display:flex;align-items:center;gap:4px;min-width:0;}
+.hol{font-size:10.5px;color:#dc2626;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cell.sat .num{color:#2563eb;} .cell.sun .num,.cell.hl .num{color:#dc2626;}
+.cell.today .num{background:var(--pink);color:#fff;}
+.ev{font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:#111827;padding:1px 4px;border-radius:4px;}
+.ev b{font-weight:800;margin-right:3px;}
+.ev.chief{background:#fbcfe8;} .ev.office{background:#fef08a;} .ev.etc{background:#fff;border:1px solid #d1d5db;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ev:not(.chief):not(.office):not(.etc){color:var(--text);} }
+.more{font-size:11px;color:var(--muted);font-weight:700;padding-left:3px;}
+.note{margin:10px 0 0;font-size:12px;color:var(--muted);}
+.err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13px;}
+.scrim{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;}
+.pop{background:var(--card);color:var(--text);border-radius:14px;width:100%;max-width:420px;max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 12px 36px rgba(0,0,0,.28);}
+.popHd{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#fce7f3;color:#9d174d;font-weight:800;font-size:16px;position:sticky;top:0;}
+.popHd .x{margin-left:auto;border:0;background:none;color:#9d174d;font-size:20px;cursor:pointer;}
+.popHd .hl{font-size:12px;color:#dc2626;}
+.list{padding:12px;display:flex;flex-direction:column;gap:8px;}
+.item{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px;}
+.item .bar{width:4px;border-radius:2px;background:#cbd5e1;flex:none;}
+.item.chief{background:#fdf2f8;} .item.chief .bar{background:#ec4899;}
+.item.office{background:#fefce8;} .item.office .bar{background:#eab308;}
+.item.etc .bar{background:#d1d5db;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .item.chief,:root:not([data-theme="light"]) .item.office{color:#111;} }
+.item b{display:block;font-size:15px;}
+.item .s{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.item .m{font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-all;}
+.empty{font-size:13px;color:var(--muted);padding:6px 2px;}
+@media (max-width:700px){
+  header h1{font-size:17px;} header h1 .appLogo{width:34px;height:24px;} header .sub{display:none;}
+  main{padding:10px 8px calc(16px + env(safe-area-inset-bottom,0px));}
+  .ym{font-size:17px;min-width:100px;} .legend{width:100%;margin:2px 0 0;justify-content:flex-end;font-size:11px;}
+  .cell{min-height:max(64px, calc((100dvh - 250px) / var(--rows,5)));padding:3px 2px 4px;}
+  .row{flex-direction:column;gap:0;} .num{font-size:12.5px;} .hol{font-size:9px;text-align:center;}
+  .ev{font-size:10px;padding:0 2px;text-overflow:clip;}
+  .more{font-size:9.5px;}
+}
+</style>
+</head>
+<body>
+<header><h1><svg class="appLogo" viewBox="10 13 66 46" aria-hidden="true"><g fill="none" stroke="#e00000" stroke-width="2.6" stroke-linecap="square"><line x1="13.96" y1="40.48" x2="50.04" y2="17.52"/><line x1="35.96" y1="17.52" x2="72.04" y2="40.48"/><line x1="72.04" y1="31.52" x2="35.96" y2="54.48"/><line x1="50.04" y1="54.48" x2="13.96" y2="31.52"/><path d="M33 42 L37.3 31 L40.6 39.5"/><circle cx="47.6" cy="36.6" r="4.9"/></g></svg>Oh Won-il</h1><span class="sub">SNCT 노동조합</span><span class="live" id="live"><i></i><span>연결 중…</span></span></header>
+<main>
+  <div id="err"></div>
+  <div class="top">
+    <div class="nav"><button type="button" id="prev" aria-label="이전 달">‹</button><span class="ym" id="ym"></span><button type="button" id="next" aria-label="다음 달">›</button></div>
+    <button type="button" class="today" id="today">오늘</button>
+    <div class="legend"><span><i style="background:#fbcfe8"></i>위원장</span><span><i style="background:#fef08a"></i>사무국</span><span><i style="background:#fff;border:1px solid #d1d5db"></i>기타</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="note">SNCT 노동조합(UNION) 캘린더와 자동으로 연동돼요. 날짜를 누르면 그날 일정이 보여요.</p>
+</main>
+<div id="pop"></div>
+<script type="module">
+// ===== Oh Won-il: SNCT 노동조합 사이트 캘린더(meta/cal_YYYY-MM)를 그대로 보여 줌(보기 전용, 실시간 연동) =====
+const SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
+const CFG = {apiKey:"AIzaSyDKNB0xNs-1FEv_UrlSfX9-fgjJph3YG8A", authDomain:"snct-d40ed.firebaseapp.com", projectId:"snct-d40ed", storageBucket:"snct-d40ed.firebasestorage.app", messagingSenderId:"236880210998", appId:"1:236880210998:web:b0abb11eae94b3103a3c97"};
+const $ = id=> document.getElementById(id);
+const pad = n=> String(n).padStart(2,'0'), ds = (y,m,d)=> `${y}-${pad(m)}-${pad(d)}`;
+const todayStr = ()=>{ const t = new Date(); return ds(t.getFullYear(), t.getMonth()+1, t.getDate()); };
+const esc = s=> String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let ym = (()=>{ const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();
+const data = {}, unsubs = {}; let holidays = {}, popDay = '', fs = null, F = null;
+const key = (y,m)=> `${y}-${pad(m)}`, prevKey = (y,m)=> m===1 ? key(y-1,12) : key(y,m-1);
+const end = e=> e.e && e.e > e.d ? e.e : e.d, on = (e,d)=> e.d <= d && d <= end(e);
+const cls = e=> e.who==='위원장' ? 'chief' : e.who==='사무국' ? 'office' : e.who==='기타' ? 'etc' : '';
+const parse = snap=>{ try{ const v = snap.exists() ? JSON.parse((snap.data()||{}).json || '[]') : []; return Array.isArray(v) ? v : []; }catch(e){ return []; } };
+function watch(k){
+  if(!F || unsubs[k]) return;
+  unsubs[k] = F.onSnapshot(F.doc(fs, 'meta', 'cal_' + k), snap=>{ data[k] = parse(snap); live(true); render(); }, err=>{ live(false); $('err').innerHTML = '<div class="err">일정을 불러오지 못했어요. 잠시 뒤 새로고침 해 주세요.</div>'; });
+}
+function live(ok){ $('live').className = 'live' + (ok ? ' on' : ''); $('live').lastElementChild.textContent = ok ? '실시간 연동' : '연결 중…'; }
+function monthEvents(y, m){ const first = ds(y,m,1); return (data[key(y,m)]||[]).concat((data[prevKey(y,m)]||[]).filter(e=> end(e) >= first)); }
+function label(d){ const [y,m,dd] = d.split('-').map(Number); return `${m}월 ${dd}일 (${'일월화수목금토'[new Date(y,m-1,dd).getDay()]})`; }
+function range(e){ if(end(e)===e.d) return ''; const f = x=>{ const [,mm,dd] = x.split('-').map(Number); return `${mm}/${dd}`; }; return `${f(e.d)} ~ ${f(end(e))}`; }
+function render(){
+  const {y, m} = ym; watch(key(y,m)); watch(prevKey(y,m));
+  $('ym').textContent = `${y}년 ${m}월`;
+  const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate(), today = todayStr(), list = monthEvents(y, m);
+  const cells = []; for(let i = 0; i < first; i++) cells.push('<div class="cell out"></div>');
+  for(let d = 1; d <= days; d++){
+    const D = ds(y,m,d), w = (first + d - 1) % 7, hol = holidays[D];
+    const ev = list.filter(e=> on(e, D)).sort((a,b)=> (a.d < b.d ? -1 : a.d > b.d ? 1 : 0) || String(a.t||'').localeCompare(String(b.t||'')));
+    cells.push(`<button type="button" class="cell${w===0?' sun':w===6?' sat':''}${hol?' hl':''}${D===today?' today':''}" data-day="${D}"><span class="row"><span class="num">${d}</span>${hol ? `<span class="hol">${esc(hol)}</span>` : ''}</span>
+      ${ev.slice(0,3).map(e=> `<span class="ev ${cls(e)}">* ${e.t && e.d===D ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}${ev.length > 3 ? `<span class="more">+${ev.length-3}개 더</span>` : ''}</button>`);
+  }
+  while(cells.length % 7) cells.push('<div class="cell out"></div>');
+  $('grid').style.setProperty('--rows', cells.length/7);
+  $('grid').innerHTML = '일월화수목금토'.split('').map((t,i)=> `<div class="dow${i===0?' sun':i===6?' sat':''}">${t}</div>`).join('') + cells.join('');
+  $('grid').querySelectorAll('[data-day]').forEach(b=> b.onclick = ()=>{ popDay = b.dataset.day; renderPop(); });
+  renderPop();
+}
+function renderPop(){
+  if(!popDay){ $('pop').innerHTML = ''; return; }
+  const [y,m] = popDay.split('-').map(Number), ev = monthEvents(y, m).filter(e=> on(e, popDay));
+  $('pop').innerHTML = `<div class="scrim" id="scrim"><div class="pop" role="dialog" aria-label="${esc(label(popDay))} 일정"><div class="popHd">${esc(label(popDay))}${holidays[popDay] ? `<span class="hl">${esc(holidays[popDay])}</span>` : ''}<button type="button" class="x" id="x" aria-label="닫기">✕</button></div>
+    <div class="list">${ev.length ? ev.map(e=> `<div class="item ${cls(e)}"><span class="bar"></span><div><b>${esc(e.title||'(제목 없음)')}</b>${range(e) || e.t ? `<div class="s">${range(e) ? '📅 ' + esc(range(e)) : ''}${range(e) && e.t ? ' · ' : ''}${e.t ? '🕘 ' + esc(e.t) : ''}${e.who ? ' · ' + esc(e.who) : ''}</div>` : (e.who ? `<div class="s">${esc(e.who)}</div>` : '')}${e.memo ? `<div class="m">${esc(e.memo)}</div>` : ''}</div></div>`).join('') : '<div class="empty">이 날은 일정이 없어요.</div>'}</div></div></div>`;
+  $('x').onclick = ()=>{ popDay = ''; renderPop(); };
+  $('scrim').onclick = e=>{ if(e.target.id==='scrim'){ popDay = ''; renderPop(); } };
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && popDay){ popDay = ''; renderPop(); } });
+$('prev').onclick = ()=>{ ym = ym.m===1 ? {y:ym.y-1, m:12} : {y:ym.y, m:ym.m-1}; render(); };
+$('next').onclick = ()=>{ ym = ym.m===12 ? {y:ym.y+1, m:1} : {y:ym.y, m:ym.m+1}; render(); };
+$('today').onclick = ()=>{ const t = new Date(); ym = {y:t.getFullYear(), m:t.getMonth()+1}; render(); };
+render();
+try{
+  const [A, Fm] = await Promise.all([import(SDK + 'firebase-app.js'), import(SDK + 'firebase-firestore.js')]);
+  F = Fm; fs = Fm.getFirestore(A.initializeApp(CFG));
+  Fm.onSnapshot(Fm.collection(fs, 'holidays'), snap=>{ const h = {}; snap.forEach(d=>{ const v = d.data(); if(v && v.date) h[v.date] = v.name; }); holidays = h; render(); }, ()=>{});
+  render();
+}catch(e){ live(false); $('err').innerHTML = '<div class="err">인터넷 연결을 확인해 주세요.</div>'; }
+</script>
+</body>
+</html>
