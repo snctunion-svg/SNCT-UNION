@@ -1608,20 +1608,17 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
   .cnTbl td.cn-org{font-size:15.5px;color:#9d174d;padding-right:30px;}
   .cnTbl td[data-l]:not(.cn-org)::before{content:attr(data-l) " · ";color:#94a3b8;font-size:12px;}
 }
-@media print{
-  #uwPrint.cnPrint{page:uwform;width:186mm !important;max-width:none !important;}   /* A4 세로 한 장 폭(186mm)에 꼭 맞게 */
-  #uwPrint.cnPrint .cnTbl{table-layout:fixed;width:186mm !important;} #uwPrint.cnPrint .cnNo{width:8mm;} #uwPrint.cnPrint th.cn-org{width:31mm;} #uwPrint.cnPrint th.cn-name{width:13mm;} #uwPrint.cnPrint th.cn-pos{width:17mm;} #uwPrint.cnPrint th.cn-hp{width:22mm;} #uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:20mm;}
-  #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:7.8pt !important;padding:.5mm .6mm !important;height:6mm !important;line-height:1.18 !important;letter-spacing:-.2pt;word-break:keep-all;overflow-wrap:anywhere;}
-  #uwPrint.cnPrint .cnTbl td.cn-addr{font-size:7.4pt !important;text-align:left;}
-  #uwPrint.cnPrint .cnTbl td.cn-hp,#uwPrint.cnPrint .cnTbl td.cn-tel,#uwPrint.cnPrint .cnTbl td.cn-fax{white-space:nowrap;font-size:7.4pt !important;letter-spacing:-.3pt;}
-  #uwPrint.cnPrint{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#000;}
-  #uwPrint.cnPrint .cnPPage{break-after:page;page-break-after:always;} #uwPrint.cnPrint .cnPPage:last-child{break-after:auto;page-break-after:auto;}
-  #uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.7;margin:0 0 3mm;}
-  #uwPrint.cnPrint .cnTbl{min-width:0;} #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:9.5pt;padding:1.3mm 1mm;height:7.4mm;border:1px solid #000;}
-  #uwPrint.cnPrint thead{display:table-header-group;} #uwPrint.cnPrint tr{break-inside:avoid;page-break-inside:avoid;}
-  #uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;padding-left:1.5mm;font-size:8.5pt;}
-  #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:8.8pt !important;padding:1mm .8mm !important;}
-}
+/* 협의회 명단 출력: A4 세로 한 장에 다 들어가게(cnFitPage가 넘치면 같은 비율로 줄임) */
+#uwPrint.cnPrint{width:186mm;max-width:none;font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#000;background:#fff;}
+#uwPrint.cnPrint .cnPPage{width:186mm;}
+#uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.6;margin:0 0 3mm;}
+#uwPrint.cnPrint .cnTbl{min-width:0;width:100%;table-layout:fixed;border-collapse:collapse;}
+#uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:8.5pt;padding:.35mm .6mm;line-height:1.15;border:1px solid #000;height:auto;word-break:keep-all;overflow-wrap:anywhere;}
+#uwPrint.cnPrint .cnNo{width:7%;} #uwPrint.cnPrint th.cn-org{width:16%;} #uwPrint.cnPrint th.cn-name{width:7%;} #uwPrint.cnPrint th.cn-pos{width:9%;} #uwPrint.cnPrint th.cn-hp{width:12%;} #uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:11%;}
+#uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;}
+#uwPrint.cnPrint .cnTbl td.cn-hp,#uwPrint.cnPrint .cnTbl td.cn-tel,#uwPrint.cnPrint .cnTbl td.cn-fax{white-space:nowrap;}
+@media print{ #uwPrint.cnPrint{page:uwform;} #uwPrint.cnPrint thead{display:table-header-group;} }
+
 /* ===== UNION > 협의회 공문서 ===== */
 .ofcTop{display:flex;align-items:center;gap:8px;margin:0 0 10px;}
 .ofcTop .spacer{flex:1 1 auto;}
@@ -5169,13 +5166,26 @@ function cnParseCsv(txt){
   if(cur || row.length){ row.push(cur); out.push(row); }
   return out.filter(r=> r.some(x=> String(x).trim()));
 }
+// 출력 전에 크기를 재서 A4 세로 한 장(186×271mm)을 넘으면 같은 비율로 줄임 — 줄인 만큼 폭을 넓혀서 종이 폭은 꽉 채움
+function cnFitPage(box){
+  const pg = box.querySelector('.cnPPage'); if(!pg) return;
+  const mm = (()=>{ const d = document.createElement('div'); d.style.cssText = 'position:absolute;width:100mm;height:0;'; document.body.appendChild(d); const v = d.getBoundingClientRect().width / 100; d.remove(); return v || 3.78; })();
+  const st = box.getAttribute('style') || ''; box.style.cssText = 'display:block !important;position:fixed;left:-6000px;top:0;visibility:hidden;';
+  const H = 262 * mm; let z = 1;   // A4 세로(297mm) − 여백 − 인쇄 글자 차이 여유
+  const fits = t=>{ pg.style.zoom = ''; pg.style.width = (186 / t) + 'mm'; return pg.offsetHeight * t <= H; };
+  { let lo = 0.3, hi = 1.8; for(let k = 0; k < 16; k++){ const mid = (lo + hi) / 2; if(fits(mid)) lo = mid; else hi = mid; } z = Math.floor(lo * 1000) / 1000; fits(z); }   // 한 장을 꽉 채우는 가장 큰 크기(짧은 명단은 키우고 긴 명단은 줄임)
+  pg.style.zoom = String(z);
+  const rows = [...pg.querySelectorAll('tbody tr')], gap = H / z - pg.offsetHeight;   // 남은 아래 공간은 줄 높이를 똑같이 늘려서 채움
+  if(rows.length && gap > 2){ const add = gap / rows.length; rows.forEach(tr=> tr.style.height = (tr.offsetHeight + add) + 'px'); }
+  box.setAttribute('style', st);
+}
 function cnPrint(){
   const l = cnCur(); if(!l) return;
   let box = document.getElementById('uwPrint'); if(box) box.remove();
   box = document.createElement('div'); box.id = 'uwPrint'; box.className = 'cnPrint';
   const all = l.rows.map((r,i)=> ({r, i}));
   box.innerHTML = `<div class="cnPPage">${cnHeadHtml(l)}${cnTable(l, all, false)}</div>`;
-  document.body.appendChild(box);
+  document.body.appendChild(box); cnFitPage(box);
   const old = document.title; document.title = l.head.title || l.name || '협의회 명단';
   document.body.classList.add('printing-uw');
   const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
