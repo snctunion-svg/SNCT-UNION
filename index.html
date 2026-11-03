@@ -5431,7 +5431,7 @@ function render(){
   else if(VIEW==='uwcal'){ el.innerHTML = pageUwCal(); bindUwCal(); }
   else if(VIEW==='uwcouncil'){ el.innerHTML = pageUwCouncil(); bindUwCouncil(); }
   else if(DOC_BOXES[VIEW]){ el.innerHTML = pageDocBox(VIEW); bindDocBox(VIEW); }   // 협의회 공문서·영수증
-  else if(VIEW==='uwacct'){ if(!el.querySelector(':scope > .acctFrame')) el.innerHTML = `<iframe class="acctFrame" src="account.html" title="회계"></iframe>`; }   // 이미 떠 있으면 그대로 둠(다른 데이터가 바뀌어 화면을 다시 그려도 회계 창은 새로 열지 않음) — 회계(사무국) 프로그램을 그대로 띄움 — 회계 로그인은 따로
+  else if(VIEW==='uwacct'){ if(!el.querySelector(':scope > .acctFrame')) el.innerHTML = `<iframe class="acctFrame" src="account.html?v=20261103b" title="회계"></iframe>`; }   // 이미 떠 있으면 그대로 둠(다른 데이터가 바뀌어 화면을 다시 그려도 회계 창은 새로 열지 않음) — 회계(사무국) 프로그램을 그대로 띄움 — 회계 로그인은 따로
   else if(VIEW==='uwform'){ el.innerHTML = pageUwFormView(); bindUwForm(); uwFormFit(); }
   else if(VIEW==='unionhub') el.innerHTML = pageHub(UNION_SHEETS);
   else if(VIEW==='leaderhub') el.innerHTML = pageHub(LEADER_SHEETS);
