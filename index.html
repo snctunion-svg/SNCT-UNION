@@ -1609,8 +1609,11 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
   .cnTbl td[data-l]:not(.cn-org)::before{content:attr(data-l) " · ";color:#94a3b8;font-size:12px;}
 }
 @media print{
-  #uwPrint.cnPrint{page:uwformL;width:277mm !important;max-width:none !important;}   /* 가로 A4(칸이 많아서) */
-  #uwPrint.cnPrint .cnTbl{table-layout:fixed;} #uwPrint.cnPrint .cnNo{width:9mm;} #uwPrint.cnPrint th.cn-org{width:40mm;} #uwPrint.cnPrint th.cn-name{width:16mm;} #uwPrint.cnPrint th.cn-pos{width:24mm;} #uwPrint.cnPrint th.cn-hp,#uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:27mm;}
+  #uwPrint.cnPrint{page:uwform;width:186mm !important;max-width:none !important;}   /* A4 세로 한 장 폭(186mm)에 꼭 맞게 */
+  #uwPrint.cnPrint .cnTbl{table-layout:fixed;width:186mm !important;} #uwPrint.cnPrint .cnNo{width:8mm;} #uwPrint.cnPrint th.cn-org{width:31mm;} #uwPrint.cnPrint th.cn-name{width:13mm;} #uwPrint.cnPrint th.cn-pos{width:17mm;} #uwPrint.cnPrint th.cn-hp{width:22mm;} #uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:20mm;}
+  #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:7.8pt !important;padding:.5mm .6mm !important;height:6mm !important;line-height:1.18 !important;letter-spacing:-.2pt;word-break:keep-all;overflow-wrap:anywhere;}
+  #uwPrint.cnPrint .cnTbl td.cn-addr{font-size:7.4pt !important;text-align:left;}
+  #uwPrint.cnPrint .cnTbl td.cn-hp,#uwPrint.cnPrint .cnTbl td.cn-tel,#uwPrint.cnPrint .cnTbl td.cn-fax{white-space:nowrap;font-size:7.4pt !important;letter-spacing:-.3pt;}
   #uwPrint.cnPrint{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#000;}
   #uwPrint.cnPrint .cnPPage{break-after:page;page-break-after:always;} #uwPrint.cnPrint .cnPPage:last-child{break-after:auto;page-break-after:auto;}
   #uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.7;margin:0 0 3mm;}
