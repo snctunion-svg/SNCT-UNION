@@ -1569,6 +1569,45 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
 .uwfRcT{text-align:center;font-size:13pt;font-weight:800;margin:0 0 2mm;}
 .uwfRcL th,.uwfRcL td{height:6.6mm;padding:.6mm 1mm;font-size:10pt;}
 .uwfRecom .uwfApDate{margin:2mm 0 3mm;} .uwfRecom .uwfApTo{font-size:13pt;}
+/* ===== UNION > 협의회 명단 ===== */
+.cnTabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+.cnTab{border:1px solid #fbcfe8;background:#fff;color:#9d174d;border-radius:18px;padding:7px 14px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;}
+.cnTab small{font-weight:700;opacity:.7;margin-left:2px;} .cnTab.on{background:#db2777;border-color:#db2777;color:#fff;}
+.cnTabAdd{padding:7px 12px;}
+.cnSearch{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;background:var(--surface);color:var(--text);margin:0 0 8px;box-sizing:border-box;}
+.cnPaper{background:#fff;color:#111;border:1px solid var(--border);border-radius:12px;padding:14px;overflow-x:auto;}
+.cnHead{position:relative;border:3px double #333;padding:8px 40px 8px 10px;margin:0 0 10px;}
+.cnHT{font-size:20px;font-weight:900;text-align:center;text-decoration:underline;text-underline-offset:5px;margin:2px 0 6px;}
+.cnHB{font-size:12.5px;line-height:1.7;text-align:center;}
+.cnHeadBtn{position:absolute;top:6px;right:6px;padding:3px 7px !important;}
+.cnHeadEd{display:flex;flex-direction:column;gap:6px;padding:10px;} .cnHeadEd label{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700;color:#64748b;}
+.cnHeadEd input{border:1px solid #e2e8f0;border-radius:8px;padding:7px 9px;font:inherit;font-size:16px;color:#111;}
+.cnHeadBtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap;} .cnHeadBtns .spacer{flex:1;}
+.cnTbl{width:100%;border-collapse:collapse;min-width:640px;}
+.cnTbl th,.cnTbl td{border:1px solid #333;padding:6px 6px;font-size:13.5px;text-align:center;}
+.cnTbl th{background:#e5e7eb;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.cnTbl td.cn-addr{text-align:left;} .cnTbl td.cn-org{font-weight:700;}
+.cnTbl tbody tr{cursor:pointer;} .cnTbl tbody tr:hover td{background:#fdf2f8;}
+.cnTbl .cnNo{width:44px;} .cnTbl a{color:#1d4ed8;text-decoration:none;}
+@media (max-width:700px){
+  .cnPaper{padding:8px;} .cnHT{font-size:15px;} .cnHB{font-size:11px;}
+  .cnTbl{min-width:0;} .cnTbl thead{display:none;}
+  .cnTbl,.cnTbl tbody,.cnTbl tr,.cnTbl td{display:block;width:100%;box-sizing:border-box;}
+  .cnTbl tr{border:1px solid #e2e8f0;border-radius:10px;margin:0 0 8px;padding:8px 10px;position:relative;}
+  .cnTbl td{border:0;padding:1px 0;text-align:left;font-size:14px;}
+  .cnTbl td:empty{display:none;}
+  .cnTbl td.cnNo{position:absolute;right:10px;top:8px;width:auto;color:#94a3b8;font-size:12px;}
+  .cnTbl td.cn-org{font-size:15.5px;color:#9d174d;padding-right:30px;}
+  .cnTbl td[data-l]:not(.cn-org)::before{content:attr(data-l) " · ";color:#94a3b8;font-size:12px;}
+}
+@media print{
+  #uwPrint.cnPrint{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#000;}
+  #uwPrint.cnPrint .cnPPage{break-after:page;page-break-after:always;} #uwPrint.cnPrint .cnPPage:last-child{break-after:auto;page-break-after:auto;}
+  #uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.7;margin:0 0 3mm;}
+  #uwPrint.cnPrint .cnTbl{min-width:0;} #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:9.5pt;padding:1.3mm 1mm;height:7.4mm;border:1px solid #000;}
+  #uwPrint.cnPrint thead{display:table-header-group;} #uwPrint.cnPrint tr{break-inside:avoid;page-break-inside:avoid;}
+  #uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;padding-left:2mm;}
+}
 /* ===== UNION > 협의회 공문서 ===== */
 .ofcTop{display:flex;align-items:center;gap:8px;margin:0 0 10px;}
 .ofcTop .spacer{flex:1 1 auto;}
@@ -3629,7 +3668,7 @@ const UNION_EMAILS = ['union@snct-d40ed.firebaseapp.com'];
 const EDITOR_EMAILS = [...UNION_EMAILS, ...LEADER_EMAILS];
 const VIEWER_VIEWS = ['input','combined','ot','dispatch','splan','pwchange','accident']; // 근태관리 구역 = 배포용(누구나). 근태코드는 조장관리 구역이라 조장·UNION만 // 업무 메뉴 없앰: 선석 조회·본선작업 삭제, 경위서&학자금은 조장관리로 // codes: 누구나 보기(수정은 UNION만)
 const LEADER_VIEWS = ['input','combined','ot','dispatch','splan','grid','mail','safety','input2','accident','berth','vessel','team','holidays','leaderhub'];
-const UNION_VIEWS  = ['unionhub','workhub','uwmem','uwcal','uwacct','uwofc','uwrcpt','uwform','uwregs','uwjobs','unana','settle','uwemp','uwwork','uwrule','uwelect','uwlmc','berth','vessel','team','holidays','codes','backup','employees','codestats','payroll','eqpay','fcana','supcut','holguar','allcut','accident'];
+const UNION_VIEWS  = ['unionhub','workhub','uwmem','uwcal','uwacct','uwofc','uwrcpt','uwcouncil','uwform','uwregs','uwjobs','unana','settle','uwemp','uwwork','uwrule','uwelect','uwlmc','berth','vessel','team','holidays','codes','backup','employees','codestats','payroll','eqpay','fcana','supcut','holguar','allcut','accident'];
 const LEADER_READONLY_VIEWS = ['codes']; // accident = 업무 > 사고&학자금(누구나 작성·출력) // 조장관리·배포(보기전용)는 보기만(근태코드 수정은 UNION만)
 let userRole = null; // null | 'leader' | 'union' | 'all'(미리보기)
 let leaderTeam = null; // 조별 조장으로 로그인했을 때 그 조('1'·'2'), 아니면 null(UNION·공용 조장은 두 조 모두)
@@ -4748,7 +4787,7 @@ document.addEventListener('focusout', ()=>{
 // ===== UNION 시트 =====
 const UNION_SHEETS = [['payroll','💰','장비 시급'],['eqpay','🧾','장비 급여 관리'],['settle','🤝','연도별 타결'],['unana','📊','분석·폐지 검토'],['backup','💾','백업·복원']];   // 휴무 2명 분석·지원 폐지·휴일보전·보전 폐지 = '분석·폐지 검토' 하나로 묶음
 const LEADER_SHEETS = [['safety','🦺','관리감독자'],['codes','🏷️','근태코드'],['mail','📧','메일 송부'],['berth','⚓','선석 조회'],['vessel','🚢','본선작업'],['team','🧩','조편성 관리'],['holidays','📅','공휴일 관리']];
-const WORK_SHEETS = [['uwcal','🗓️','캘린더'],['uwmem','👥','조합원 명부'],['uwform','📄','양식'],['uwofc','📨','협의회 공문서'],['uwrcpt','🧾','영수증'],['uwregs','📘','규약&규정'],['uwjobs','📗','취업&업무'],['uwacct','📒','회계']];   // UNION WORK 시트(UNION만)
+const WORK_SHEETS = [['uwcal','🗓️','캘린더'],['uwmem','👥','조합원 명부'],['uwform','📄','양식'],['uwofc','📨','협의회 공문서'],['uwcouncil','📇','협의회 명단'],['uwrcpt','🧾','영수증'],['uwregs','📘','규약&규정'],['uwjobs','📗','취업&업무'],['uwacct','📒','회계']];   // UNION WORK 시트(UNION만)
 // 묶음 시트: 경위서&학자금처럼 위에서 규정을 골라 보고 출력. 마지막에 본 규정을 기억
 const UW_GROUPS = {unana:[['fcana','📊 휴무 2명 분석'],['supcut','✂️ 지원 폐지'],['holguar','🗓️ 휴일보전'],['allcut','🧮 보전 폐지']], uwregs:[['uwrule','📘 규약'],['uwlmc','🤝 노사협의회규정'],['uwelect','🗳️ 선거관리규정']], uwjobs:[['uwemp','📗 취업규칙'],['uwwork','🏢 업무규정']]};
 const uwGrpLast = (()=>{ const d = {unana:'fcana', uwregs:'uwrule', uwjobs:'uwemp'}; try{ const o = JSON.parse(localStorage.getItem('snct_uw_grp')||'{}'); Object.keys(d).forEach(g=>{ if(o[g] && UW_GROUPS[g].some(x=> x[0]===o[g])) d[g] = o[g]; }); }catch(e){} return d; })();
@@ -5055,6 +5094,132 @@ function bindDocBox(v){
     };
   }
 }
+// ===== UNION > 협의회 명단: 명단 여러 개(중동구 협의회 · 연합 인천본부 …)를 탭으로. UNION만 — 클라우드 unionPrivate/councilList(연락처가 있어 앱 파일에는 넣지 않음) =====
+const CN_COLS = [['org','조직명'],['name','성명'],['pos','직책·비고'],['hp','핸드폰'],['tel','전화'],['fax','팩스'],['zip','우편번호'],['addr','주소']];
+const CN_VIEW_COLS = {tel:['org','name','pos','hp','tel','fax'], addr:['org','name','zip','addr']};
+let cnDoc = null, cnErr = '', cnQ = '', cnEdit = null, cnHeadEdit = false, cnView = 'tel', cnTab = (()=>{ try{ return localStorage.getItem('snct_cn_tab') || ''; }catch(e){ return ''; } })();
+function cnNorm(d){ d = d && Array.isArray(d.lists) ? d : {lists: []}; d.lists.forEach(l=>{ l.head = Object.assign({title:'', l1:'', l2:'', l3:''}, l.head||{}); l.rows = Array.isArray(l.rows) ? l.rows : []; }); return d; }
+function cnCur(){ const d = cnDoc || {lists: []}; return d.lists.find(l=> l.id===cnTab) || d.lists[0] || null; }
+function subscribeCn(){
+  if(!db || unsub.cn || !(userRole==='union' || userRole==='all')) return;
+  try{ unsub.cn = db.collection('unionPrivate').doc('councilList').onSnapshot(doc=>{ let d = null; try{ d = doc.exists ? JSON.parse((doc.data()||{}).json || 'null') : null; }catch(e){} cnDoc = cnNorm(d); cnErr = ''; if(VIEW==='uwcouncil' && !cnEdit && !cnHeadEdit) scheduleRender(); },
+    ()=>{ cnErr = '명단을 읽을 권한이 없어요(UNION 로그인 필요).'; if(VIEW==='uwcouncil') scheduleRender(); }); }catch(e){}
+}
+async function cnSave(){ cnDoc.at = Date.now(); await db.collection('unionPrivate').doc('councilList').set({json: JSON.stringify(cnDoc), at: cnDoc.at}); }
+function cnTelLink(t){ const n = String(t||'').replace(/[^\d]/g,''); return n.length >= 9 ? `<a href="tel:${n}">${esc(t)}</a>` : esc(t||''); }
+function cnTitle(l, view){ const t = String(l.head.title||''); return view==='addr' ? (/연락처$/.test(t) ? t.replace(/연락처$/, '주소록') : t + ' (주소록)') : t; }
+function cnTable(l, view, rows, link){
+  const cols = CN_VIEW_COLS[view], lbl = Object.fromEntries(CN_COLS);
+  return `<table class="cnTbl cnV-${view}"><thead><tr><th class="cnNo">번호</th>${cols.map(k=> `<th class="cn-${k}">${lbl[k]}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(({r,i})=> `<tr${link ? ` data-cn-i="${i}"` : ''}><td class="cnNo">${i+1}</td>${cols.map(k=> `<td class="cn-${k}" data-l="${lbl[k]}">${link && (k==='hp' || k==='tel') ? cnTelLink(r[k]) : esc(r[k]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function cnHeadHtml(l, view){ const h = l.head; return `<div class="cnHT">${esc(cnTitle(l, view))}</div>${h.l1 || h.l2 || h.l3 ? `<div class="cnHB">${h.l1 ? `<div>${esc(h.l1)}</div>` : ''}${h.l2 ? `<div>${esc(h.l2)}</div>` : ''}${h.l3 ? `<div><b>${esc(h.l3)}</b></div>` : ''}</div>` : ''}`; }
+function pageUwCouncil(){
+  subscribeCn();
+  const d = cnDoc || {lists: []}, l = cnCur(), q = cnQ.trim().toLowerCase();
+  const tabs = `<div class="cnTabs">${d.lists.map(x=> `<button type="button" class="cnTab${l && x.id===l.id ? ' on' : ''}" data-cn-tab="${esc(x.id)}">${esc(x.name || x.head.title || '명단')} <small>${x.rows.length}</small></button>`).join('')}<button type="button" class="cnTab cnTabAdd" id="cnNewList" title="새 명단 만들기">＋</button></div>`;
+  if(!l) return `<h2 class="pgttl">협의회 명단</h2><div class="uwHead"><b>협의회 명단</b></div>${cnErr ? `<div class="note">${esc(cnErr)}</div>` : ''}
+    <div class="calEmpty" style="padding:24px;text-align:center;">${cnDoc ? '아직 명단이 없어요. 아래 [📥 명단 파일 가져오기]로 받은 <b>협의회명단.json</b> 파일을 올려 주세요.' : '불러오는 중…'}</div>
+    <div class="uwTools" style="justify-content:center;"><label class="btn sm">📥 명단 파일 가져오기<input type="file" id="cnImp" accept=".json,application/json,.csv,text/csv" hidden></label><button type="button" class="btn ghost sm" id="cnNewList">＋ 새 명단</button></div>`;
+  const rows = l.rows.map((r,i)=> ({r, i})).filter(({r})=> !q || Object.values(r).join(' ').toLowerCase().includes(q));
+  const edit = cnEdit ? (()=>{ const r = cnEdit.i >= 0 ? (l.rows[cnEdit.i]||{}) : {};
+    return `<div class="sheetPopScrim" id="cnScrim"><div class="sheetPop calPop" role="dialog" aria-label="명단 ${cnEdit.i >= 0 ? '수정' : '추가'}">
+      <div class="sheetPopHd"><b>${cnEdit.i >= 0 ? esc(r.org||r.name||'') + ' 수정' : '조직 추가'}</b><button type="button" class="sheetPopX" id="cnX" aria-label="닫기">✕</button></div>
+      <div class="calForm">${CN_COLS.map(([k,lb])=> `<label${k==='addr' || k==='org' ? ' class="full"' : ''}><span>${lb}</span><input type="${k==='hp' || k==='tel' ? 'tel' : 'text'}" data-cn-f="${k}" value="${esc(r[k]||'')}"></label>`).join('')}
+        <label><span>순서 (번호)</span><input type="number" id="cnPos" inputmode="numeric" min="1" max="${l.rows.length + (cnEdit.i >= 0 ? 0 : 1)}" value="${cnEdit.i >= 0 ? cnEdit.i + 1 : l.rows.length + 1}"></label></div>
+      <div class="calPopBtns">${cnEdit.i >= 0 ? '<button type="button" class="btn ghost sm" id="cnDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="cnCancel">취소</button><button type="button" class="btn" id="cnSaveBtn">💾 저장</button></div></div></div>`; })() : '';
+  const headBox = cnHeadEdit
+    ? `<div class="cnHead cnHeadEd"><label>탭 이름<input type="text" data-cn-h="name" value="${esc(l.name||'')}"></label>${[['title','제목'],['l1','머리글 1줄'],['l2','머리글 2줄'],['l3','머리글 3줄(굵게)']].map(([k,lb])=> `<label>${lb}<input type="text" data-cn-h="${k}" value="${esc(l.head[k]||'')}"></label>`).join('')}
+        <div class="cnHeadBtns"><button type="button" class="btn ghost sm" id="cnDelList">🗑 이 명단 지우기</button><span class="spacer"></span><button type="button" class="btn ghost sm" id="cnHeadCancel">취소</button><button type="button" class="btn sm" id="cnHeadSave">💾 저장</button></div></div>`
+    : `<div class="cnHead">${cnHeadHtml(l, cnView)}<button type="button" class="btn ghost sm cnHeadBtn" id="cnHeadEdit" title="제목·머리글 고치기">✏️</button></div>`;
+  return `
+  <h2 class="pgttl">협의회 명단</h2>
+  <div class="uwHead"><b>협의회 명단</b></div>
+  ${cnErr ? `<div class="note">${esc(cnErr)}</div>` : ''}
+  ${tabs}
+  <div class="uwmVTabs"><button type="button" class="uwmVTab${cnView==='tel' ? ' on' : ''}" data-cn-view="tel">📞 연락처</button><button type="button" class="uwmVTab${cnView==='addr' ? ' on' : ''}" data-cn-view="addr">🏠 주소록</button></div>
+  <input type="search" id="cnSearch" class="cnSearch" value="${esc(cnQ)}" placeholder="조직명·성명·전화번호 검색" autocomplete="off">
+  <div class="uwTools"><button type="button" class="btn sm" id="cnPrint">🖨️ 출력</button><button type="button" class="btn ghost sm" id="cnAdd">＋ 조직 추가</button><button type="button" class="btn ghost sm" id="cnCsv">⬇️ 엑셀(CSV)</button><label class="btn ghost sm">📥 가져오기<input type="file" id="cnImp" accept=".json,application/json,.csv,text/csv" hidden></label></div>
+  <div class="cnPaper">${headBox}${cnTable(l, cnView, rows, true)}
+    ${l.rows.length ? (rows.length ? '' : '<div class="calEmpty" style="padding:14px;text-align:center;">찾는 조직이 없어요.</div>') : '<div class="calEmpty" style="padding:20px;text-align:center;">이 명단은 비어 있어요. [＋ 조직 추가]로 넣어 주세요.</div>'}</div>
+  <p class="hint">줄을 누르면 고칠 수 있어요. 전화번호를 누르면 바로 전화가 걸려요(휴대폰).</p>
+  ${edit}`;
+}
+function cnParseCsv(txt){
+  const out = []; let row = [], cur = '', q = false;
+  for(let i = 0; i < txt.length; i++){ const ch = txt[i];
+    if(q){ if(ch==='"'){ if(txt[i+1]==='"'){ cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if(ch==='"') q = true; else if(ch===','){ row.push(cur); cur = ''; } else if(ch==='\n' || ch==='\r'){ if(ch==='\r' && txt[i+1]==='\n') i++; row.push(cur); out.push(row); row = []; cur = ''; } else cur += ch; }
+  if(cur || row.length){ row.push(cur); out.push(row); }
+  return out.filter(r=> r.some(x=> String(x).trim()));
+}
+function cnPrint(){
+  const l = cnCur(); if(!l) return;
+  let box = document.getElementById('uwPrint'); if(box) box.remove();
+  box = document.createElement('div'); box.id = 'uwPrint'; box.className = 'cnPrint';
+  const all = l.rows.map((r,i)=> ({r, i}));
+  box.innerHTML = ['tel','addr'].map(v=> `<div class="cnPPage">${cnHeadHtml(l, v)}${cnTable(l, v, all, false)}</div>`).join('');
+  document.body.appendChild(box);
+  const old = document.title; document.title = l.head.title || l.name || '협의회 명단';
+  document.body.classList.add('printing-uw');
+  const done = ()=>{ document.body.classList.remove('printing-uw'); document.title = old; const b2 = document.getElementById('uwPrint'); if(b2) b2.remove(); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  setTimeout(()=>{ window.print(); setTimeout(()=>{ if(!matchMedia('print').matches) done(); }, 1500); }, 50);
+}
+function bindUwCouncil(){
+  const $ = id=> document.getElementById(id);
+  const ensure = ()=>{ cnDoc = cnNorm(cnDoc); return cnDoc; };
+  document.querySelectorAll('[data-cn-tab]').forEach(b=> b.onclick = ()=>{ cnTab = b.dataset.cnTab; try{ localStorage.setItem('snct_cn_tab', cnTab); }catch(e){} cnQ = ''; render(); });
+  document.querySelectorAll('[data-cn-view]').forEach(b=> b.onclick = ()=>{ cnView = b.dataset.cnView; render(); });
+  if($('cnNewList')) $('cnNewList').onclick = async ()=>{ const d = ensure(), id = 'l' + Date.now().toString(36);
+    d.lists.push({id, name:'새 명단', head:{title:'새 명단', l1:'', l2:'', l3:''}, rows:[]}); cnTab = id; cnHeadEdit = true;
+    try{ await cnSave(); }catch(e){ showToast(saveErrMsg('저장하지 못했어요.', e)); } render(); };
+  const s = $('cnSearch'); if(s){ let t = null; s.oninput = ()=>{ clearTimeout(t); t = setTimeout(()=>{ cnQ = s.value; const pos = s.selectionStart; render(); const s2 = $('cnSearch'); if(s2){ s2.focus(); try{ s2.setSelectionRange(pos, pos); }catch(e){} } }, 250); }; }
+  if($('cnPrint')) $('cnPrint').onclick = cnPrint;
+  if($('cnAdd')) $('cnAdd').onclick = ()=>{ cnEdit = {i:-1}; render(); };
+  document.querySelectorAll('[data-cn-i]').forEach(tr=> tr.onclick = e=>{ if(e.target.closest('a')) return; cnEdit = {i: Number(tr.dataset.cnI)}; render(); });
+  if($('cnCsv')) $('cnCsv').onclick = ()=>{ const l = cnCur(); if(!l) return; const qq = v=> `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+    const csv = '﻿' + [['번호', ...CN_COLS.map(c=> c[1])].map(qq).join(',')].concat(l.rows.map((r,i)=> [i+1, ...CN_COLS.map(([k])=> r[k])].map(qq).join(','))).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'})); a.download = (l.name || '협의회명단') + '_' + todayStr() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500); };
+  if($('cnImp')) $('cnImp').onchange = async ()=>{ const f = $('cnImp').files && $('cnImp').files[0]; $('cnImp').value = ''; if(!f) return;
+    try{
+      const txt = (await f.text()).replace(/^﻿/, '');
+      if(/\.json$/i.test(f.name) || /^\s*\{/.test(txt)){   // 명단 파일(여러 명단 한꺼번에)
+        const j = cnNorm(JSON.parse(txt)); if(!j.lists.length) throw new Error('명단이 비어 있어요.');
+        const d = ensure(), names = j.lists.map(x=> `${x.name} ${x.rows.length}곳`).join(', ');
+        const go = async ()=>{ j.lists.forEach(x=>{ const i = d.lists.findIndex(y=> y.id===x.id); if(i >= 0) d.lists[i] = x; else d.lists.push(x); }); cnTab = j.lists[0].id; await cnSave(); render(); showToast(`넣었어요: ${names}`); };
+        const same = j.lists.filter(x=> d.lists.some(y=> y.id===x.id && y.rows.length));
+        if(same.length) appConfirm(`이미 있는 명단(${same.map(x=> x.name).join(', ')})을 파일 내용으로 바꿀까요?`, go); else await go();
+        return;
+      }
+      const rows = cnParseCsv(txt); if(rows.length < 2) throw new Error('명단이 비어 있어요.');   // CSV: 지금 보는 명단을 바꿈
+      const hd = rows[0].map(x=> String(x).replace(/\s/g,'')), find = re=> hd.findIndex(x=> re.test(x));
+      const idx = {org: find(/조직/), name: find(/성명|대표자/), pos: find(/직책|비고/), hp: find(/핸드폰|휴대폰/), tel: find(/^전화|노조전화/), fax: find(/팩스|fax/i), zip: find(/우편/), addr: find(/주소/)};
+      if(idx.org < 0 && idx.name < 0) throw new Error('첫 줄에 "조직명", "성명" 제목이 있어야 해요.');
+      const list = rows.slice(1).map(r=> Object.fromEntries(CN_COLS.map(([k])=> [k, idx[k] >= 0 ? String(r[idx[k]]||'').trim() : '']))).filter(r=> r.org || r.name);
+      const d = ensure(); let l = cnCur(); if(!l){ l = {id:'l' + Date.now().toString(36), name: f.name.replace(/\.[^.]+$/, ''), head:{title: f.name.replace(/\.[^.]+$/, ''), l1:'', l2:'', l3:''}, rows:[]}; d.lists.push(l); cnTab = l.id; }
+      const go = async ()=>{ l.rows = list; await cnSave(); render(); showToast(`명단 ${list.length}곳을 넣었어요.`); };
+      if(l.rows.length) appConfirm(`'${l.name}' 명단 ${l.rows.length}곳을 파일의 ${list.length}곳으로 바꿀까요?`, go); else await go();
+    }catch(err){ showToast('가져오지 못했어요: ' + (err.message || err)); } };
+  if($('cnHeadEdit')) $('cnHeadEdit').onclick = ()=>{ cnHeadEdit = true; render(); };
+  if($('cnHeadCancel')) $('cnHeadCancel').onclick = ()=>{ cnHeadEdit = false; render(); };
+  if($('cnHeadSave')) $('cnHeadSave').onclick = async ()=>{ const l = cnCur(); if(!l) return; const h = {}; document.querySelectorAll('[data-cn-h]').forEach(x=> h[x.dataset.cnH] = x.value.trim());
+    l.name = h.name || h.title || '명단'; delete h.name; l.head = Object.assign({}, l.head, h);
+    try{ await cnSave(); cnHeadEdit = false; render(); showToast('저장했어요.'); }catch(e){ showToast(saveErrMsg('저장하지 못했어요.', e)); } };
+  if($('cnDelList')) $('cnDelList').onclick = ()=>{ const l = cnCur(); if(!l) return; appConfirm(`'${l.name}' 명단(${l.rows.length}곳)을 통째로 지울까요?`, async ()=>{ cnDoc.lists = cnDoc.lists.filter(x=> x.id!==l.id); cnTab = ''; cnHeadEdit = false; try{ await cnSave(); render(); showToast('명단을 지웠어요.'); }catch(e){ showToast(saveErrMsg('지우지 못했어요.', e)); } }); };
+  if(cnEdit){
+    const l = cnCur(), close = ()=>{ cnEdit = null; render(); };
+    $('cnX').onclick = close; $('cnCancel').onclick = close; $('cnScrim').onclick = e=>{ if(e.target.id==='cnScrim') close(); };
+    if($('cnDel')) $('cnDel').onclick = ()=> appConfirm('이 조직을 명단에서 지울까요?', async ()=>{ l.rows.splice(cnEdit.i, 1); try{ await cnSave(); cnEdit = null; render(); showToast('지웠어요.'); }catch(e){ showToast(saveErrMsg('지우지 못했어요.', e)); } });
+    $('cnSaveBtn').onclick = async ()=>{
+      const r = {}; document.querySelectorAll('[data-cn-f]').forEach(x=> r[x.dataset.cnF] = x.value.trim());
+      if(!r.org && !r.name){ showToast('조직명이나 성명을 적어 주세요.'); return; }
+      const rows = l.rows.slice(); if(cnEdit.i >= 0) rows.splice(cnEdit.i, 1);
+      const pos = Math.max(1, Math.min(rows.length + 1, Number($('cnPos').value) || rows.length + 1)) - 1; rows.splice(pos, 0, r); l.rows = rows;
+      try{ await cnSave(); cnEdit = null; render(); showToast('저장했어요.'); }catch(e){ showToast(saveErrMsg('저장하지 못했어요.', e)); }
+    };
+  }
+}
 // ===== 캘린더: 월별 일정. 누구나 보고(배포용), UNION만 입력·수정. 클라우드 meta/cal_YYYY-MM 에 달마다 저장 =====
 const CAL_CATS = [['gen','일반'],['meet','회의'],['nego','교섭'],['event','행사'],['edu','교육'],['etc','기타']];
 let calYm = (()=>{ try{ const o = JSON.parse(localStorage.getItem('snct_cal_ym') || 'null'); if(o && o.y > 2000 && o.m >= 1 && o.m <= 12) return {y:o.y, m:o.m}; }catch(e){} const t = new Date(); return {y:t.getFullYear(), m:t.getMonth()+1}; })();   // 보던 달을 기억(다시 열어도 그 달)
@@ -5250,6 +5415,7 @@ function render(){
   else if(isUwView(VIEW)){ el.innerHTML = uwGroupBar(VIEW) + pageUwDoc(VIEW); bindUwDoc(VIEW); bindUwGroupSel(); }
   else if(VIEW==='uwmem'){ el.innerHTML = pageUwMem(); bindUwMem(); }
   else if(VIEW==='uwcal'){ el.innerHTML = pageUwCal(); bindUwCal(); }
+  else if(VIEW==='uwcouncil'){ el.innerHTML = pageUwCouncil(); bindUwCouncil(); }
   else if(DOC_BOXES[VIEW]){ el.innerHTML = pageDocBox(VIEW); bindDocBox(VIEW); }   // 협의회 공문서·영수증
   else if(VIEW==='uwacct'){ if(!el.querySelector(':scope > .acctFrame')) el.innerHTML = `<iframe class="acctFrame" src="account.html" title="회계"></iframe>`; }   // 이미 떠 있으면 그대로 둠(다른 데이터가 바뀌어 화면을 다시 그려도 회계 창은 새로 열지 않음) — 회계(사무국) 프로그램을 그대로 띄움 — 회계 로그인은 따로
   else if(VIEW==='uwform'){ el.innerHTML = pageUwFormView(); bindUwForm(); uwFormFit(); }
