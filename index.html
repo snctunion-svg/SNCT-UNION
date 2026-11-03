@@ -1614,7 +1614,7 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
 #uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.6;margin:0 0 3mm;}
 #uwPrint.cnPrint .cnTbl{min-width:0;width:100%;table-layout:fixed;border-collapse:collapse;}
 #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:8.5pt;padding:.35mm .6mm;line-height:1.15;border:1px solid #000;height:auto;word-break:keep-all;overflow-wrap:anywhere;}
-#uwPrint.cnPrint .cnNo{width:7%;} #uwPrint.cnPrint th.cn-org{width:16%;} #uwPrint.cnPrint th.cn-name{width:7%;} #uwPrint.cnPrint th.cn-pos{width:9%;} #uwPrint.cnPrint th.cn-hp{width:12%;} #uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:11%;}
+#uwPrint.cnPrint .cnNo{width:5%;} #uwPrint.cnPrint th.cn-org{width:15%;} #uwPrint.cnPrint th.cn-name{width:7%;} #uwPrint.cnPrint th.cn-pos{width:9%;} #uwPrint.cnPrint th.cn-hp{width:14%;} #uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:13%;}
 #uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;}
 #uwPrint.cnPrint .cnTbl td.cn-hp,#uwPrint.cnPrint .cnTbl td.cn-tel,#uwPrint.cnPrint .cnTbl td.cn-fax{white-space:nowrap;}
 @media print{ #uwPrint.cnPrint{page:uwform;} #uwPrint.cnPrint thead{display:table-header-group;} }
@@ -5175,6 +5175,8 @@ function cnFitPage(box){
   const fits = t=>{ pg.style.zoom = ''; pg.style.width = (186 / t) + 'mm'; return pg.offsetHeight * t <= H; };
   { let lo = 0.3, hi = 1.8; for(let k = 0; k < 16; k++){ const mid = (lo + hi) / 2; if(fits(mid)) lo = mid; else hi = mid; } z = Math.floor(lo * 1000) / 1000; fits(z); }   // 한 장을 꽉 채우는 가장 큰 크기(짧은 명단은 키우고 긴 명단은 줄임)
   pg.style.zoom = String(z);
+  pg.querySelectorAll('td.cn-hp, td.cn-tel, td.cn-fax').forEach(td=>{   // 전화번호가 칸을 넘으면 그 칸만 글씨를 줄여 칸 안에 맞춤
+    let f = parseFloat(getComputedStyle(td).fontSize), n = 0; while(td.scrollWidth > td.clientWidth + 1 && n < 20){ f *= 0.94; td.style.fontSize = f + 'px'; td.style.letterSpacing = '-0.3px'; n++; } });
   const rows = [...pg.querySelectorAll('tbody tr')], gap = H / z - pg.offsetHeight;   // 남은 아래 공간은 줄 높이를 똑같이 늘려서 채움
   if(rows.length && gap > 2){ const add = gap / rows.length; rows.forEach(tr=> tr.style.height = (tr.offsetHeight + add) + 'px'); }
   box.setAttribute('style', st);
@@ -7215,13 +7217,14 @@ function slipCalc(e, start, end){
       // 2026년 9월 명세서(전재필)와 대조한 규칙:
       //  · 근태코드가 D·N(근무 없는 날 다른 조 지원)인 날의 지원 OT → '타조지원'
       //  · 그 밖의 지원(DN·ND 연장 지원, SC 지원휴무 등) → 연장근로·평일야간에 포함
-      //  · SC(지원휴무) 지원일은 하루 8시간 × 시급을 '특근수당'으로 추가
       const code = effCode(rec, ds, String(e.name||'').trim());
       if(code==='D' || code==='N' || code==='DS' || code==='NS') supPrem += p.premium;
       else { wkNight += p.supNight; wkGroupPrem += p.premium; }
-      if(code==='SC') tkDays++;
     }
     meal += m; wkGroupPrem += m;
+    // 특근수당 = 명절연휴기간 근로수당(명세서 산출내역 기준): 설날·추석 연휴에 근무(본근무·지원)한 날 × 8시간 × 시급
+    //  (예전엔 SC 지원휴무일로 계산했지만, 김치수 9월 명세서는 SC 날이 있어도 특근수당 없음 → 명절 근무일로 바꿈)
+    if((c.valid || p.valid) && /추석|설날/.test(holidays[ds] || '')) tkDays++;
   }
   const real = wk + ho + sp + meal, guar = wk + Math.max(ho,60) + Math.max(sp,30) + meal;
   return {guar, diff: Math.max(guar-real,0), extHours: Math.max((wkGroupPrem - wkNight*0.5)/1.5, 0), wkNight, holWork, holOT, holNight, holExtra, supPrem, tkDays};
@@ -7243,7 +7246,7 @@ function slipAmounts(e, start, end){
     holN: r10(pc.holNight*rate*0.5),                      // 휴일야간근로수당
     etc: r10(pc.diff*rate),                               // 기타수당(보전 OT − 실 OT)
     sup: Math.ceil(pc.supPrem*rate/10)*10,                // 타조지원(D·N 지원일 OT) — 10원 올림(9월 명세서: 661,312.5 → 661,320)
-    tk: r10(pc.tkDays*8*hourly)                           // 특근수당(SC 지원휴무일 × 8시간 × 시급)
+    tk: r10(pc.tkDays*8*hourly)                           // 특근수당(명절연휴 근무일 × 8시간 × 시급)
   };
   // 기타수당 = 보전 OT 총액 − 다른 OT 수당 합계(10원 단위 차이를 기타수당에서 맞춤 — 9월 명세서와 같은 방식)
   if(pc.diff > 0) a.etc = Math.max(r10(pc.guar*rate) - (a.ext + a.night + a.hol + a.holOT + a.holN + a.sup), 0);
