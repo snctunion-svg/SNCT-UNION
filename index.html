@@ -1570,6 +1570,13 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
 .uwfRcL th,.uwfRcL td{height:6.6mm;padding:.6mm 1mm;font-size:10pt;}
 .uwfRecom .uwfApDate{margin:2mm 0 3mm;} .uwfRecom .uwfApTo{font-size:13pt;}
 /* ===== UNION > 협의회 명단 ===== */
+.cnTbl tr.cnM-y td{background:#fef9c3 !important;} .cnTbl tr.cnM-g td{background:#dcfce7 !important;}
+.cnTbl tr.cnM-y td,.cnTbl tr.cnM-g td{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.cnMarks{display:flex;gap:6px;flex-wrap:wrap;}
+.cnMk{border:1px solid #d1d5db;border-radius:16px;padding:5px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#334155;}
+.cnMk-y{background:#fef9c3;border-color:#fde047;} .cnMk-g{background:#dcfce7;border-color:#86efac;}
+.cnMk.on{box-shadow:0 0 0 2px #db2777;}
+.cnTbl td.cn-hp,.cnTbl td.cn-tel,.cnTbl td.cn-fax{white-space:nowrap;}
 .cnTabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
 .cnTab{border:1px solid #fbcfe8;background:#fff;color:#9d174d;border-radius:18px;padding:7px 14px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;}
 .cnTab small{font-weight:700;opacity:.7;margin-left:2px;} .cnTab.on{background:#db2777;border-color:#db2777;color:#fff;}
@@ -1583,7 +1590,7 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
 .cnHeadEd{display:flex;flex-direction:column;gap:6px;padding:10px;} .cnHeadEd label{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700;color:#64748b;}
 .cnHeadEd input{border:1px solid #e2e8f0;border-radius:8px;padding:7px 9px;font:inherit;font-size:16px;color:#111;}
 .cnHeadBtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap;} .cnHeadBtns .spacer{flex:1;}
-.cnTbl{width:100%;border-collapse:collapse;min-width:640px;}
+.cnTbl{width:100%;border-collapse:collapse;min-width:900px;}
 .cnTbl th,.cnTbl td{border:1px solid #333;padding:6px 6px;font-size:13.5px;text-align:center;}
 .cnTbl th{background:#e5e7eb;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 .cnTbl td.cn-addr{text-align:left;} .cnTbl td.cn-org{font-weight:700;}
@@ -1594,6 +1601,7 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
   .cnTbl{min-width:0;} .cnTbl thead{display:none;}
   .cnTbl,.cnTbl tbody,.cnTbl tr,.cnTbl td{display:block;width:100%;box-sizing:border-box;}
   .cnTbl tr{border:1px solid #e2e8f0;border-radius:10px;margin:0 0 8px;padding:8px 10px;position:relative;}
+  .cnTbl tr.cnM-y{background:#fef9c3;border-color:#fde047;} .cnTbl tr.cnM-g{background:#dcfce7;border-color:#86efac;}
   .cnTbl td{border:0;padding:1px 0;text-align:left;font-size:14px;}
   .cnTbl td:empty{display:none;}
   .cnTbl td.cnNo{position:absolute;right:10px;top:8px;width:auto;color:#94a3b8;font-size:12px;}
@@ -1601,12 +1609,15 @@ main#content.acctMode{padding:0 !important;overflow:hidden;display:flex;flex-dir
   .cnTbl td[data-l]:not(.cn-org)::before{content:attr(data-l) " · ";color:#94a3b8;font-size:12px;}
 }
 @media print{
+  #uwPrint.cnPrint{page:uwformL;width:277mm !important;max-width:none !important;}   /* 가로 A4(칸이 많아서) */
+  #uwPrint.cnPrint .cnTbl{table-layout:fixed;} #uwPrint.cnPrint .cnNo{width:9mm;} #uwPrint.cnPrint th.cn-org{width:40mm;} #uwPrint.cnPrint th.cn-name{width:16mm;} #uwPrint.cnPrint th.cn-pos{width:24mm;} #uwPrint.cnPrint th.cn-hp,#uwPrint.cnPrint th.cn-tel,#uwPrint.cnPrint th.cn-fax{width:27mm;}
   #uwPrint.cnPrint{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#000;}
   #uwPrint.cnPrint .cnPPage{break-after:page;page-break-after:always;} #uwPrint.cnPrint .cnPPage:last-child{break-after:auto;page-break-after:auto;}
   #uwPrint.cnPrint .cnHT{font-size:16pt;margin:0 0 3mm;} #uwPrint.cnPrint .cnHB{border:3px double #000;padding:2mm;font-size:9.5pt;line-height:1.7;margin:0 0 3mm;}
   #uwPrint.cnPrint .cnTbl{min-width:0;} #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:9.5pt;padding:1.3mm 1mm;height:7.4mm;border:1px solid #000;}
   #uwPrint.cnPrint thead{display:table-header-group;} #uwPrint.cnPrint tr{break-inside:avoid;page-break-inside:avoid;}
-  #uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;padding-left:2mm;}
+  #uwPrint.cnPrint .cnTbl td.cn-addr{text-align:left;padding-left:1.5mm;font-size:8.5pt;}
+  #uwPrint.cnPrint .cnTbl th,#uwPrint.cnPrint .cnTbl td{font-size:8.8pt !important;padding:1mm .8mm !important;}
 }
 /* ===== UNION > 협의회 공문서 ===== */
 .ofcTop{display:flex;align-items:center;gap:8px;margin:0 0 10px;}
@@ -5096,8 +5107,9 @@ function bindDocBox(v){
 }
 // ===== UNION > 협의회 명단: 명단 여러 개(중동구 협의회 · 연합 인천본부 …)를 탭으로. UNION만 — 클라우드 unionPrivate/councilList(연락처가 있어 앱 파일에는 넣지 않음) =====
 const CN_COLS = [['org','조직명'],['name','성명'],['pos','직책·비고'],['hp','핸드폰'],['tel','전화'],['fax','팩스'],['zip','우편번호'],['addr','주소']];
-const CN_VIEW_COLS = {tel:['org','name','pos','hp','tel','fax'], addr:['org','name','zip','addr']};
-let cnDoc = null, cnErr = '', cnQ = '', cnEdit = null, cnHeadEdit = false, cnView = 'tel', cnTab = (()=>{ try{ return localStorage.getItem('snct_cn_tab') || ''; }catch(e){ return ''; } })();
+const CN_SHOW = ['org','name','pos','hp','tel','fax','addr'];   // 연락처·주소 한 표에
+const CN_MARKS = [['','표시 없음'],['y','연한 노란색'],['g','연한 초록색']];
+let cnDoc = null, cnErr = '', cnQ = '', cnEdit = null, cnHeadEdit = false, cnTab = (()=>{ try{ return localStorage.getItem('snct_cn_tab') || ''; }catch(e){ return ''; } })();
 function cnNorm(d){ d = d && Array.isArray(d.lists) ? d : {lists: []}; d.lists.forEach(l=>{ l.head = Object.assign({title:'', l1:'', l2:'', l3:''}, l.head||{}); l.rows = Array.isArray(l.rows) ? l.rows : []; }); return d; }
 function cnCur(){ const d = cnDoc || {lists: []}; return d.lists.find(l=> l.id===cnTab) || d.lists[0] || null; }
 function subscribeCn(){
@@ -5107,13 +5119,14 @@ function subscribeCn(){
 }
 async function cnSave(){ cnDoc.at = Date.now(); await db.collection('unionPrivate').doc('councilList').set({json: JSON.stringify(cnDoc), at: cnDoc.at}); }
 function cnTelLink(t){ const n = String(t||'').replace(/[^\d]/g,''); return n.length >= 9 ? `<a href="tel:${n}">${esc(t)}</a>` : esc(t||''); }
-function cnTitle(l, view){ const t = String(l.head.title||''); return view==='addr' ? (/연락처$/.test(t) ? t.replace(/연락처$/, '주소록') : t + ' (주소록)') : t; }
-function cnTable(l, view, rows, link){
-  const cols = CN_VIEW_COLS[view], lbl = Object.fromEntries(CN_COLS);
-  return `<table class="cnTbl cnV-${view}"><thead><tr><th class="cnNo">번호</th>${cols.map(k=> `<th class="cn-${k}">${lbl[k]}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map(({r,i})=> `<tr${link ? ` data-cn-i="${i}"` : ''}><td class="cnNo">${i+1}</td>${cols.map(k=> `<td class="cn-${k}" data-l="${lbl[k]}">${link && (k==='hp' || k==='tel') ? cnTelLink(r[k]) : esc(r[k]||'')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+function cnTitle(l){ return String(l.head.title||''); }
+function cnCell(r, k, link){ if(k==='addr') return esc([r.zip ? `(${r.zip})` : '', r.addr||''].filter(Boolean).join(' ')); return link && (k==='hp' || k==='tel') ? cnTelLink(r[k]) : esc(r[k]||''); }
+function cnTable(l, rows, link){
+  const cols = CN_SHOW, lbl = Object.assign(Object.fromEntries(CN_COLS), {addr:'주소'});
+  return `<table class="cnTbl"><thead><tr><th class="cnNo">번호</th>${cols.map(k=> `<th class="cn-${k}">${lbl[k]}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(({r,i})=> `<tr class="${r.mark ? 'cnM-' + r.mark : ''}"${link ? ` data-cn-i="${i}"` : ''}><td class="cnNo">${i+1}</td>${cols.map(k=> `<td class="cn-${k}" data-l="${lbl[k]}">${cnCell(r, k, link)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
-function cnHeadHtml(l, view){ const h = l.head; return `<div class="cnHT">${esc(cnTitle(l, view))}</div>${h.l1 || h.l2 || h.l3 ? `<div class="cnHB">${h.l1 ? `<div>${esc(h.l1)}</div>` : ''}${h.l2 ? `<div>${esc(h.l2)}</div>` : ''}${h.l3 ? `<div><b>${esc(h.l3)}</b></div>` : ''}</div>` : ''}`; }
+function cnHeadHtml(l){ const h = l.head; return `<div class="cnHT">${esc(cnTitle(l))}</div>${h.l1 || h.l2 || h.l3 ? `<div class="cnHB">${h.l1 ? `<div>${esc(h.l1)}</div>` : ''}${h.l2 ? `<div>${esc(h.l2)}</div>` : ''}${h.l3 ? `<div><b>${esc(h.l3)}</b></div>` : ''}</div>` : ''}`; }
 function pageUwCouncil(){
   subscribeCn();
   const d = cnDoc || {lists: []}, l = cnCur(), q = cnQ.trim().toLowerCase();
@@ -5126,23 +5139,23 @@ function pageUwCouncil(){
     return `<div class="sheetPopScrim" id="cnScrim"><div class="sheetPop calPop" role="dialog" aria-label="명단 ${cnEdit.i >= 0 ? '수정' : '추가'}">
       <div class="sheetPopHd"><b>${cnEdit.i >= 0 ? esc(r.org||r.name||'') + ' 수정' : '조직 추가'}</b><button type="button" class="sheetPopX" id="cnX" aria-label="닫기">✕</button></div>
       <div class="calForm">${CN_COLS.map(([k,lb])=> `<label${k==='addr' || k==='org' ? ' class="full"' : ''}><span>${lb}</span><input type="${k==='hp' || k==='tel' ? 'tel' : 'text'}" data-cn-f="${k}" value="${esc(r[k]||'')}"></label>`).join('')}
+        <label class="full"><span>줄 색</span><span class="cnMarks">${CN_MARKS.map(([m,lb])=> `<button type="button" class="cnMk cnMk-${m||'n'}${(r.mark||'')===m ? ' on' : ''}" data-cn-mark="${m}">${lb}</button>`).join('')}</span></label>
         <label><span>순서 (번호)</span><input type="number" id="cnPos" inputmode="numeric" min="1" max="${l.rows.length + (cnEdit.i >= 0 ? 0 : 1)}" value="${cnEdit.i >= 0 ? cnEdit.i + 1 : l.rows.length + 1}"></label></div>
       <div class="calPopBtns">${cnEdit.i >= 0 ? '<button type="button" class="btn ghost sm" id="cnDel">🗑 삭제</button>' : ''}<span class="spacer"></span><button type="button" class="btn ghost" id="cnCancel">취소</button><button type="button" class="btn" id="cnSaveBtn">💾 저장</button></div></div></div>`; })() : '';
   const headBox = cnHeadEdit
     ? `<div class="cnHead cnHeadEd"><label>탭 이름<input type="text" data-cn-h="name" value="${esc(l.name||'')}"></label>${[['title','제목'],['l1','머리글 1줄'],['l2','머리글 2줄'],['l3','머리글 3줄(굵게)']].map(([k,lb])=> `<label>${lb}<input type="text" data-cn-h="${k}" value="${esc(l.head[k]||'')}"></label>`).join('')}
         <div class="cnHeadBtns"><button type="button" class="btn ghost sm" id="cnDelList">🗑 이 명단 지우기</button><span class="spacer"></span><button type="button" class="btn ghost sm" id="cnHeadCancel">취소</button><button type="button" class="btn sm" id="cnHeadSave">💾 저장</button></div></div>`
-    : `<div class="cnHead">${cnHeadHtml(l, cnView)}<button type="button" class="btn ghost sm cnHeadBtn" id="cnHeadEdit" title="제목·머리글 고치기">✏️</button></div>`;
+    : `<div class="cnHead">${cnHeadHtml(l)}<button type="button" class="btn ghost sm cnHeadBtn" id="cnHeadEdit" title="제목·머리글 고치기">✏️</button></div>`;
   return `
   <h2 class="pgttl">협의회 명단</h2>
   <div class="uwHead"><b>협의회 명단</b></div>
   ${cnErr ? `<div class="note">${esc(cnErr)}</div>` : ''}
   ${tabs}
-  <div class="uwmVTabs"><button type="button" class="uwmVTab${cnView==='tel' ? ' on' : ''}" data-cn-view="tel">📞 연락처</button><button type="button" class="uwmVTab${cnView==='addr' ? ' on' : ''}" data-cn-view="addr">🏠 주소록</button></div>
   <input type="search" id="cnSearch" class="cnSearch" value="${esc(cnQ)}" placeholder="조직명·성명·전화번호 검색" autocomplete="off">
   <div class="uwTools"><button type="button" class="btn sm" id="cnPrint">🖨️ 출력</button><button type="button" class="btn ghost sm" id="cnAdd">＋ 조직 추가</button><button type="button" class="btn ghost sm" id="cnCsv">⬇️ 엑셀(CSV)</button><label class="btn ghost sm">📥 가져오기<input type="file" id="cnImp" accept=".json,application/json,.csv,text/csv" hidden></label></div>
-  <div class="cnPaper">${headBox}${cnTable(l, cnView, rows, true)}
+  <div class="cnPaper">${headBox}${cnTable(l, rows, true)}
     ${l.rows.length ? (rows.length ? '' : '<div class="calEmpty" style="padding:14px;text-align:center;">찾는 조직이 없어요.</div>') : '<div class="calEmpty" style="padding:20px;text-align:center;">이 명단은 비어 있어요. [＋ 조직 추가]로 넣어 주세요.</div>'}</div>
-  <p class="hint">줄을 누르면 고칠 수 있어요. 전화번호를 누르면 바로 전화가 걸려요(휴대폰).</p>
+  <p class="hint">줄을 누르면 고칠 수 있고, 줄 색(연한 노란색·연한 초록색)도 거기서 골라요. 전화번호를 누르면 바로 전화가 걸려요(휴대폰).</p>
   ${edit}`;
 }
 function cnParseCsv(txt){
@@ -5158,7 +5171,7 @@ function cnPrint(){
   let box = document.getElementById('uwPrint'); if(box) box.remove();
   box = document.createElement('div'); box.id = 'uwPrint'; box.className = 'cnPrint';
   const all = l.rows.map((r,i)=> ({r, i}));
-  box.innerHTML = ['tel','addr'].map(v=> `<div class="cnPPage">${cnHeadHtml(l, v)}${cnTable(l, v, all, false)}</div>`).join('');
+  box.innerHTML = `<div class="cnPPage">${cnHeadHtml(l)}${cnTable(l, all, false)}</div>`;
   document.body.appendChild(box);
   const old = document.title; document.title = l.head.title || l.name || '협의회 명단';
   document.body.classList.add('printing-uw');
@@ -5170,7 +5183,6 @@ function bindUwCouncil(){
   const $ = id=> document.getElementById(id);
   const ensure = ()=>{ cnDoc = cnNorm(cnDoc); return cnDoc; };
   document.querySelectorAll('[data-cn-tab]').forEach(b=> b.onclick = ()=>{ cnTab = b.dataset.cnTab; try{ localStorage.setItem('snct_cn_tab', cnTab); }catch(e){} cnQ = ''; render(); });
-  document.querySelectorAll('[data-cn-view]').forEach(b=> b.onclick = ()=>{ cnView = b.dataset.cnView; render(); });
   if($('cnNewList')) $('cnNewList').onclick = async ()=>{ const d = ensure(), id = 'l' + Date.now().toString(36);
     d.lists.push({id, name:'새 명단', head:{title:'새 명단', l1:'', l2:'', l3:''}, rows:[]}); cnTab = id; cnHeadEdit = true;
     try{ await cnSave(); }catch(e){ showToast(saveErrMsg('저장하지 못했어요.', e)); } render(); };
@@ -5209,10 +5221,12 @@ function bindUwCouncil(){
   if($('cnDelList')) $('cnDelList').onclick = ()=>{ const l = cnCur(); if(!l) return; appConfirm(`'${l.name}' 명단(${l.rows.length}곳)을 통째로 지울까요?`, async ()=>{ cnDoc.lists = cnDoc.lists.filter(x=> x.id!==l.id); cnTab = ''; cnHeadEdit = false; try{ await cnSave(); render(); showToast('명단을 지웠어요.'); }catch(e){ showToast(saveErrMsg('지우지 못했어요.', e)); } }); };
   if(cnEdit){
     const l = cnCur(), close = ()=>{ cnEdit = null; render(); };
+    document.querySelectorAll('[data-cn-mark]').forEach(b=> b.onclick = ()=>{ cnEdit.mark = b.dataset.cnMark; document.querySelectorAll('[data-cn-mark]').forEach(x=> x.classList.toggle('on', x===b)); });
     $('cnX').onclick = close; $('cnCancel').onclick = close; $('cnScrim').onclick = e=>{ if(e.target.id==='cnScrim') close(); };
     if($('cnDel')) $('cnDel').onclick = ()=> appConfirm('이 조직을 명단에서 지울까요?', async ()=>{ l.rows.splice(cnEdit.i, 1); try{ await cnSave(); cnEdit = null; render(); showToast('지웠어요.'); }catch(e){ showToast(saveErrMsg('지우지 못했어요.', e)); } });
     $('cnSaveBtn').onclick = async ()=>{
       const r = {}; document.querySelectorAll('[data-cn-f]').forEach(x=> r[x.dataset.cnF] = x.value.trim());
+      const old = cnEdit.i >= 0 ? (l.rows[cnEdit.i]||{}) : {}; r.mark = cnEdit.mark !== undefined ? cnEdit.mark : (old.mark || ''); if(!r.mark) delete r.mark;
       if(!r.org && !r.name){ showToast('조직명이나 성명을 적어 주세요.'); return; }
       const rows = l.rows.slice(); if(cnEdit.i >= 0) rows.splice(cnEdit.i, 1);
       const pos = Math.max(1, Math.min(rows.length + 1, Number($('cnPos').value) || rows.length + 1)) - 1; rows.splice(pos, 0, r); l.rows = rows;
