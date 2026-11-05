@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Oh Won-il</title>
 <meta name="theme-color" content="#db2777">
+<link rel="manifest" href="ohwonil.webmanifest?v=1">
 <link rel="icon" type="image/png" href="union-icon-192.png">
 <link rel="apple-touch-icon" href="union-apple-icon.png">
 <meta name="apple-mobile-web-app-title" content="Oh Won-il">
@@ -42,9 +43,21 @@ main{max-width:1200px;margin:0 auto;padding:14px 16px calc(24px + env(safe-area-
 .cell.sat .num{color:#2563eb;} .cell.sun .num,.cell.hl .num{color:#dc2626;}
 .cell.today .num{background:var(--pink);color:#fff;}
 .ev{font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:#111827;padding:1px 4px;border-radius:4px;}
-.ev b{font-weight:800;margin-right:3px;}
+.ev b{font-weight:800;}
 .ev.chief{background:#fbcfe8;} .ev.office{background:#fef08a;} .ev.etc{background:#fff;border:1px solid #d1d5db;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ev:not(.chief):not(.office):not(.etc){color:var(--text);} }
+.ev.to{background:#e0f2fe;color:#075985;} .ev.to b{color:#0369a1;}
+.item.to{background:#f0f9ff;} .item.to .bar{background:#0ea5e9;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .item.to{color:#111;} }
+.toSum{font-size:12.5px;font-weight:800;color:#0369a1;background:#e0f2fe;border-radius:8px;padding:6px 10px;}
+.toBtn{border:1px solid #7dd3fc;background:var(--card);color:#0369a1;border-radius:8px;height:36px;font-size:13px;font-weight:800;padding:0 12px;cursor:pointer;}
+.toForm{padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;}
+.toForm input[type=password]{height:40px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font-size:15px;background:var(--card);color:var(--text);}
+.toForm .btns{display:flex;gap:8px;flex-wrap:wrap;}
+.toForm button{height:40px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:700;padding:0 14px;cursor:pointer;font-size:14px;}
+.toForm button.pri{background:#0284c7;border-color:#0284c7;color:#fff;}
+.toForm .msg{font-size:12.5px;color:#b91c1c;min-height:16px;} .toForm .ok{color:#15803d;}
+.toForm .hint{font-size:12px;color:var(--muted);}
 .more{font-size:11px;color:var(--muted);font-weight:700;padding-left:3px;}
 .note{margin:10px 0 0;font-size:12px;color:var(--muted);}
 .err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13px;}
@@ -72,6 +85,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 16px calc(24px + env(safe-area-
   .row{flex-direction:column;gap:0;} .num{font-size:12.5px;} .hol{font-size:9px;text-align:center;}
   .ev{font-size:10px;padding:0 2px;text-overflow:clip;}
   .more{font-size:9.5px;}
+  .toSum{font-size:11.5px;padding:5px 8px;} .toBtn{height:34px;font-size:12px;padding:0 10px;}
 }
 </style>
 </head>
@@ -82,10 +96,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 16px calc(24px + env(safe-area-
   <div class="top">
     <div class="nav"><button type="button" id="prev" aria-label="이전 달">‹</button><span class="ym" id="ym"></span><button type="button" id="next" aria-label="다음 달">›</button></div>
     <button type="button" class="today" id="today">오늘</button>
-    <div class="legend"><span><i style="background:#fbcfe8"></i>위원장</span><span><i style="background:#fef08a"></i>사무국</span><span><i style="background:#fff;border:1px solid #d1d5db"></i>기타</span></div>
+    <button type="button" class="toBtn" id="toBtn">⏱ TIME OFF</button><span class="toSum" id="toSum" hidden></span>
+    <div class="legend"><span><i style="background:#e0f2fe"></i>TIME OFF</span><span><i style="background:#fbcfe8"></i>위원장</span><span><i style="background:#fef08a"></i>사무국</span><span><i style="background:#fff;border:1px solid #d1d5db"></i>기타</span></div>
   </div>
   <div class="grid" id="grid"></div>
-  <p class="note">SNCT 노동조합(UNION) 캘린더와 자동으로 연동돼요. 날짜를 누르면 그날 일정이 보여요.</p>
+  <p class="note">SNCT 노동조합(UNION) 캘린더와 자동으로 연동돼요. 날짜를 누르면 그날 일정이 보여요. TIME OFF(하늘색)는 UNION 로그인 때만 보여요.</p>
+  <input type="file" id="toFile" accept=".xlsm,.xlsx,.xls" hidden>
 </main>
 <div id="pop"></div>
 <script type="module">
@@ -100,6 +116,62 @@ let ym = (()=>{ try{ const o = JSON.parse(localStorage.getItem('ohwonil_ym') || 
 const keep = ()=>{ try{ localStorage.setItem('ohwonil_ym', JSON.stringify(ym)); }catch(e){} };
 const go = dm=>{ ym = dm < 0 ? (ym.m===1 ? {y:ym.y-1, m:12} : {y:ym.y, m:ym.m-1}) : (ym.m===12 ? {y:ym.y+1, m:1} : {y:ym.y, m:ym.m+1}); keep(); render(); };
 const data = {}, unsubs = {}; let holidays = {}, popDay = '', fs = null, F = null;
+// ===== TIME OFF: 위원장 전용 일정(타임오프 시간·스케줄·비고) — 클라우드 unionPrivate/timeoff(UNION 로그인 때만). 개인 일정이라 이 파일에는 넣지 않음 =====
+const UNION_EMAIL = 'union@snct-d40ed.firebaseapp.com';
+let A = null, auth = null, isUnion = false, toRows = {}, toUnsub = null, toPop = false, toMsg = '', toOk = false;
+const toTitle = r=> [r.s, r.n].filter(Boolean).join(' · ');
+const hstr = h=> (Math.round(h*10)/10).toString();
+function toWatch(){
+  if(toUnsub){ toUnsub(); toUnsub = null; }
+  toRows = {};
+  if(!isUnion || !F) { render(); return; }
+  toUnsub = F.onSnapshot(F.doc(fs, 'unionPrivate', 'timeoff'), snap=>{ let v = null; try{ v = snap.exists() ? JSON.parse((snap.data()||{}).json || 'null') : null; }catch(e){} const m = {}; ((v && v.rows) || []).forEach(r=>{ if(r && r.d) m[r.d] = r; }); toRows = m; render(); }, ()=>{ toRows = {}; render(); });
+}
+async function toImport(file){
+  toMsg = '엑셀을 읽는 중…'; toOk = true; renderToPop();
+  try{
+    if(!window.XLSX) await new Promise((ok, no)=>{ const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    const wb = XLSX.read(await file.arrayBuffer(), {type:'array'});
+    const ws = wb.Sheets['일정']; if(!ws) throw new Error("'일정' 시트가 없어요");
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+    const toD = v=>{ if(typeof v==='number' && v > 30000 && v < 80000){ const t = new Date(Math.round((v - 25569) * 86400000)); return ds(t.getUTCFullYear(), t.getUTCMonth()+1, t.getUTCDate()); } return ''; };
+    const txt = v=> v==null ? '' : String(v).trim();
+    const rows = [];
+    for(let i = 3; i < aoa.length; i++){
+      const r = aoa[i] || [], d = toD(r[1]) || toD(r[0]); if(!d) continue;
+      const h = Number(r[3]) || 0, s = txt(r[5]), n = txt(r[7]);
+      if(h || s || n) rows.push({d, h, s, n});
+    }
+    if(!rows.length) throw new Error('가져올 일정이 없어요');
+    await F.setDoc(F.doc(fs, 'unionPrivate', 'timeoff'), {json: JSON.stringify({rows, at: Date.now()}), at: Date.now()});
+    toMsg = `${rows.length}개 날짜를 가져왔어요. (${rows[0].d} ~ ${rows[rows.length-1].d})`; toOk = true;
+  }catch(e){ toMsg = '가져오지 못했어요: ' + ((e && (e.code || e.message)) || '오류'); toOk = false; }
+  renderToPop();
+}
+function renderToPop(){
+  const el = $('toPop'); if(!toPop){ if(el) el.remove(); return; }
+  const body = isUnion
+    ? `<div class="hint">위원장 스케줄 엑셀(.xlsm)의 '일정' 시트(날짜·타임오프·스케줄·비고)를 가져와요. 다시 가져오면 새 엑셀 내용으로 바뀌어요.</div>
+       <div class="btns"><button type="button" class="pri" id="toPick">📂 엑셀 가져오기</button><button type="button" id="toOut">로그아웃</button></div>`
+    : `<div class="hint">TIME OFF는 UNION만 볼 수 있어요. UNION 비밀번호를 넣어 주세요.</div>
+       <input type="password" id="toPw" autocomplete="current-password" placeholder="UNION 비밀번호">
+       <div class="btns"><button type="button" class="pri" id="toLogin">로그인</button></div>`;
+  const html = `<div class="scrim" id="toScrim"><div class="pop" role="dialog" aria-label="TIME OFF"><div class="popHd">⏱ TIME OFF<button type="button" class="x" id="toX" aria-label="닫기">✕</button></div>
+    <div class="toForm">${body}<div class="msg${toOk ? ' ok' : ''}">${esc(toMsg)}</div></div></div></div>`;
+  let box = el; if(!box){ box = document.createElement('div'); box.id = 'toPop'; document.body.appendChild(box); }
+  box.innerHTML = html;
+  const close = ()=>{ toPop = false; toMsg = ''; renderToPop(); };
+  $('toX').onclick = close; $('toScrim').onclick = e=>{ if(e.target.id==='toScrim') close(); };
+  if(isUnion){
+    $('toPick').onclick = ()=> $('toFile').click();
+    $('toOut').onclick = async ()=>{ try{ await A.signOut(auth); }catch(e){} close(); };
+  } else {
+    const go = async ()=>{ const pw = $('toPw').value; if(!pw) return; toMsg = '로그인 중…'; toOk = true; renderToPop();
+      try{ await A.signInWithEmailAndPassword(auth, UNION_EMAIL, pw); toMsg = '로그인했어요.'; toOk = true; }catch(e){ toMsg = '비밀번호가 맞지 않아요.'; toOk = false; } renderToPop(); };
+    $('toLogin').onclick = go; $('toPw').onkeydown = e=>{ if(e.key==='Enter') go(); };
+    setTimeout(()=>{ const p = $('toPw'); if(p) p.focus(); }, 30);
+  }
+}
 const key = (y,m)=> `${y}-${pad(m)}`, prevKey = (y,m)=> m===1 ? key(y-1,12) : key(y,m-1);
 const end = e=> e.e && e.e > e.d ? e.e : e.d, on = (e,d)=> e.d <= d && d <= end(e);
 const cls = e=> e.who==='위원장' ? 'chief' : e.who==='사무국' ? 'office' : e.who==='기타' ? 'etc' : '';
@@ -115,13 +187,16 @@ function range(e){ if(end(e)===e.d) return ''; const f = x=>{ const [,mm,dd] = x
 function render(){
   const {y, m} = ym; watch(key(y,m)); watch(prevKey(y,m));
   $('ym').textContent = `${y}년 ${m}월`;
+  { const k = key(y,m), sum = Object.values(toRows).filter(r=> r.d.slice(0,7)===k).reduce((a,r)=> a + (r.h||0), 0), el = $('toSum');
+    el.hidden = !isUnion; el.textContent = `이번 달 TIME OFF ${hstr(sum)}시간`; $('toBtn').textContent = isUnion ? '⏱ TIME OFF' : '🔒 TIME OFF'; }
   const first = new Date(y, m-1, 1).getDay(), days = new Date(y, m, 0).getDate(), today = todayStr(), list = monthEvents(y, m);
   const cells = []; for(let i = 0; i < first; i++) cells.push('<div class="cell out"></div>');
   for(let d = 1; d <= days; d++){
     const D = ds(y,m,d), w = (first + d - 1) % 7, hol = holidays[D];
     const ev = list.filter(e=> on(e, D)).sort((a,b)=> (a.d < b.d ? -1 : a.d > b.d ? 1 : 0) || String(a.t||'').localeCompare(String(b.t||'')));
     cells.push(`<button type="button" class="cell${w===0?' sun':w===6?' sat':''}${hol?' hl':''}${D===today?' today':''}" data-day="${D}"><span class="row"><span class="num">${d}</span>${hol ? `<span class="hol">${esc(hol)}</span>` : ''}</span>
-      ${ev.slice(0,3).map(e=> `<span class="ev ${cls(e)}">* ${e.t && e.d===D ? `<b>${esc(e.t)}</b>` : ''}${esc(e.title||'')}</span>`).join('')}${ev.length > 3 ? `<span class="more">+${ev.length-3}개 더</span>` : ''}</button>`);
+      ${toRows[D] ? `<span class="ev to">${toRows[D].h ? `<b>${hstr(toRows[D].h)}h</b>` : ''}${esc(toTitle(toRows[D]) || (toRows[D].h ? '' : 'TIME OFF'))}</span>` : ''}
+      ${ev.slice(0,3).map(e=> `<span class="ev ${cls(e)}">* ${esc(e.title||'')}${e.t && e.d===D ? ` <b>${esc(e.t)}</b>` : ''}</span>`).join('')}${ev.length > 3 ? `<span class="more">+${ev.length-3}개 더</span>` : ''}</button>`);
   }
   while(cells.length % 7) cells.push('<div class="cell out"></div>');
   $('grid').style.setProperty('--rows', cells.length/7);
@@ -133,12 +208,14 @@ function renderPop(){
   if(!popDay){ $('pop').innerHTML = ''; return; }
   const [y,m] = popDay.split('-').map(Number), ev = monthEvents(y, m).filter(e=> on(e, popDay));
   $('pop').innerHTML = `<div class="scrim" id="scrim"><div class="pop" role="dialog" aria-label="${esc(label(popDay))} 일정"><div class="popHd">${esc(label(popDay))}${holidays[popDay] ? `<span class="hl">${esc(holidays[popDay])}</span>` : ''}<button type="button" class="x" id="x" aria-label="닫기">✕</button></div>
-    <div class="list">${ev.length ? ev.map(e=> `<div class="item ${cls(e)}"><span class="bar"></span><div><b>${esc(e.title||'(제목 없음)')}</b>${range(e) || e.t ? `<div class="s">${range(e) ? '📅 ' + esc(range(e)) : ''}${range(e) && e.t ? ' · ' : ''}${e.t ? '🕘 ' + esc(e.t) : ''}${e.who ? ' · ' + esc(e.who) : ''}</div>` : (e.who ? `<div class="s">${esc(e.who)}</div>` : '')}${e.memo ? `<div class="m">${esc(e.memo)}</div>` : ''}</div></div>`).join('') : '<div class="empty">이 날은 일정이 없어요.</div>'}</div></div></div>`;
+    <div class="list">${toRows[popDay] ? `<div class="item to"><span class="bar"></span><div><b>⏱ TIME OFF${toRows[popDay].h ? ' ' + esc(hstr(toRows[popDay].h)) + '시간' : ''}</b>${toRows[popDay].s ? `<div class="s">스케줄: ${esc(toRows[popDay].s)}</div>` : ''}${toRows[popDay].n ? `<div class="m">${esc(toRows[popDay].n)}</div>` : ''}</div></div>` : ''}${ev.length ? ev.map(e=> `<div class="item ${cls(e)}"><span class="bar"></span><div><b>${esc(e.title||'(제목 없음)')}</b>${range(e) || e.t ? `<div class="s">${range(e) ? '📅 ' + esc(range(e)) : ''}${range(e) && e.t ? ' · ' : ''}${e.t ? '🕘 ' + esc(e.t) : ''}${e.who ? ' · ' + esc(e.who) : ''}</div>` : (e.who ? `<div class="s">${esc(e.who)}</div>` : '')}${e.memo ? `<div class="m">${esc(e.memo)}</div>` : ''}</div></div>`).join('') : (toRows[popDay] ? '' : '<div class="empty">이 날은 일정이 없어요.</div>')}</div></div></div>`;
   $('x').onclick = ()=>{ popDay = ''; renderPop(); };
   $('scrim').onclick = e=>{ if(e.target.id==='scrim'){ popDay = ''; renderPop(); } };
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && popDay){ popDay = ''; renderPop(); } });
 $('prev').onclick = ()=> go(-1);
+$('toBtn').onclick = ()=>{ if(!auth){ $('err').innerHTML = '<div class="err">아직 연결 중이에요. 잠시 뒤 다시 눌러 주세요.</div>'; return; } toPop = true; toMsg = ''; renderToPop(); };
+$('toFile').onchange = e=>{ const f = e.target.files && e.target.files[0]; e.target.value = ''; if(f) toImport(f); };
 $('next').onclick = ()=> go(1);
 $('today').onclick = ()=>{ const t = new Date(); ym = {y:t.getFullYear(), m:t.getMonth()+1}; keep(); render(); };
 { let sx = 0, sy = 0, st = 0; const g = $('grid');   // 휴대폰: 달력을 옆으로 밀면 다음/이전 달
@@ -147,8 +224,9 @@ $('today').onclick = ()=>{ const t = new Date(); ym = {y:t.getFullYear(), m:t.ge
     if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 800){ e.preventDefault(); go(dx < 0 ? 1 : -1); } }); }
 render();
 try{
-  const [A, Fm] = await Promise.all([import(SDK + 'firebase-app.js'), import(SDK + 'firebase-firestore.js')]);
-  F = Fm; fs = Fm.getFirestore(A.initializeApp(CFG));
+  const [Ap, Fm, Au] = await Promise.all([import(SDK + 'firebase-app.js'), import(SDK + 'firebase-firestore.js'), import(SDK + 'firebase-auth.js')]);
+  const app = Ap.initializeApp(CFG); F = Fm; fs = Fm.getFirestore(app); A = Au; auth = Au.getAuth(app);
+  Au.onAuthStateChanged(auth, u=>{ isUnion = !!(u && String(u.email||'').toLowerCase()===UNION_EMAIL); toWatch(); if(toPop) renderToPop(); });   // UNION 사이트에서 로그인해 두었으면(같은 주소) 그대로 로그인 상태
   Fm.onSnapshot(Fm.collection(fs, 'holidays'), snap=>{ const h = {}; snap.forEach(d=>{ const v = d.data(); if(v && v.date) h[v.date] = v.name; }); holidays = h; render(); }, ()=>{});
   render();
 }catch(e){ live(false); $('err').innerHTML = '<div class="err">인터넷 연결을 확인해 주세요.</div>'; }

@@ -1,0 +1,15 @@
+{
+  "id": "./ohwonil.html",
+  "name": "Oh Won-il",
+  "short_name": "Oh Won-il",
+  "start_url": "./ohwonil.html",
+  "scope": "./ohwonil.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#db2777",
+  "icons": [
+    { "src": "union-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "union-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "union-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
