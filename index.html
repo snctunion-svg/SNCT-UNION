@@ -3250,10 +3250,12 @@ function autoManguen(dateStr, empId){
   if(!empId || typeof attStore==='undefined') return false;
   const [y,m,d] = dateStr.split('-').map(Number);
   if(new Date(y,m-1,d).getDay()!==6) return false;
+  const emp = (typeof employees!=='undefined' && employees.find(x=> x.id===empId)) || null, nm = emp ? String(emp.name||'').trim() : '';
   for(let i=5;i>=1;i--){
     const ds = addDays(dateStr, -i);
     const r = attStore[ds+'_'+empId];
-    const ok = (r && r.checkIn && !preSupportRec(r, ds)) || isHolidayFor(ds, empId) || (r && MANGUEN_CODES.has(r.statusCode));
+    const code = effCode(r, ds, nm);   // 근태코드는 statusCode·attCode·원본 엑셀 어디에 있든 같은 값(월별 근태에 보이는 코드)
+    const ok = (r && r.checkIn && !preSupportRec(r, ds)) || isHolidayFor(ds, empId) || MANGUEN_CODES.has(code);
     if(!ok) return false;
   }
   return true;
@@ -3292,8 +3294,7 @@ function preSupportRec(rec, dateStr){
   if(toDec(rec.checkIn) > 14) return null;
   // 교육·노조업무처럼 주간 본근무로 인정되는 날(원본 엑셀은 근무 칸에 D 체크)은 선지원이 아님
   if(['E','UJ','EC'].includes(rec.statusCode)) return null;
-  // 근무표가 D·DN이라도 근태가 D·DN(근무 바꿈)이면 회사는 선지원으로 계산(유재현 10월 명세서 대조) — 그 밖의 근태(교육 등)만 본근무
-  if(rec.statusCode && !['D','DN'].includes(rec.statusCode) && (rec.workCode==='D' || rec.workCode==='DN')) return null;
+  if(rec.statusCode && (rec.workCode==='D' || rec.workCode==='DN')) return null;
   const sched = rec.baseShift || ((typeof empScheduled==='function' && rec.employeeId) ? empScheduled(rec.employeeId, dateStr) : '');
   if(sched !== 'N') return null;
   return Object.assign({}, rec, {supportIn: rec.checkIn, supportOut: rec.checkOut, checkIn: '', checkOut: ''});
@@ -7219,8 +7220,7 @@ function slipCalc(e, start, end){
       //  · 근태코드가 D·N(근무 없는 날 다른 조 지원)인 날의 지원 OT → '타조지원'
       //  · 그 밖의 지원(DN·ND 연장 지원, SC 지원휴무 등) → 연장근로·평일야간에 포함
       const code = effCode(rec, ds, String(e.name||'').trim());
-      const preD = !!preSupportRec(rec, ds) && (code==='D' || code==='DN'); // 근무 바꿈(근태 D·DN) 선지원 → 연장근로 칸(회사 명세서: 타조지원 아님)
-      if(!preD && (code==='D' || code==='N' || code==='DS' || code==='NS')) supPrem += p.premium;
+      if(code==='D' || code==='N' || code==='DS' || code==='NS') supPrem += p.premium;
       else if(k==='SU' || k==='H'){
         // 일요일·공휴일 지원(DN·ND·SC 등) → 회사 명세서처럼 휴일연장(×2)·휴일야간 칸으로. 본조보상(×1.5)만 연장근로 칸(금액 합계는 그대로)
         const hj = (Number(rec.honjoComp)||0)*1.5;
