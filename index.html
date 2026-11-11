@@ -1723,6 +1723,14 @@ body:not(.isUnion) nav#nav .navPriv{display:none !important;}   /* 보기 전용
 .calForm label.full{grid-column:1 / -1;}
 .calForm input,.calForm select,.calForm textarea{border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:16px;background:var(--bg);color:var(--text);min-width:0;width:100%;box-sizing:border-box;}
 .calForm textarea{min-height:80px;resize:vertical;}
+.calForm input[type=date],.calForm input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-height:42px;text-align:left;}   /* 아이폰에서 날짜 칸이 오른쪽으로 삐져나가지 않게 */
+.calForm input[type=date]::-webkit-date-and-time-value,.calForm input[type=time]::-webkit-date-and-time-value{text-align:left;}
+.calTimeBox{display:flex;flex-direction:column;gap:3px;font-size:11.5px;font-weight:700;color:var(--text-muted);min-width:0;}
+.calTimeRow{display:flex;gap:6px;align-items:stretch;min-width:0;}
+.calTimeRow input{flex:1;}
+.calTimeRow input:disabled{opacity:.45;}
+.calAllDay{flex:0 0 auto;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);border-radius:8px;padding:0 12px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.calAllDay.on{background:#db2777;border-color:#db2777;color:#fff;}
 .calColors{display:flex;gap:6px;flex-wrap:wrap;}
 .calColors button{border:1px solid var(--border);border-radius:16px;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;}
 .calColors button.on{box-shadow:0 0 0 2px currentColor;}
@@ -5337,7 +5345,7 @@ function pageUwCal(){
       <div class="calForm">
         <label><span>시작</span><input type="date" id="calFD" value="${esc(calEdit.d)}"></label>
         <label><span>종료</span><input type="date" id="calFE" value="${esc(calEnd(calEdit))}"></label>
-        <label><span>시간 (선택)</span><input type="time" id="calFT" value="${esc(calEdit.t||'')}"></label>
+        <div class="calTimeBox"><span class="calLbl">시간</span><span class="calTimeRow"><button type="button" class="calAllDay${calEdit.t ? '' : ' on'}" id="calFAll" aria-pressed="${calEdit.t ? 'false' : 'true'}">하루 종일</button><input type="time" id="calFT" value="${esc(calEdit.t||'')}"${calEdit.t ? '' : ' disabled'} aria-label="시간"></span></div>
         <label class="full"><span>제목</span><span class="calWhoRow">${['위원장','사무국','기타'].map(w=> `<button type="button" class="calWho${calEdit.who===w ? ' on' : ''}" data-cal-who="${w}">${w}</button>`).join('')}</span><input type="text" id="calFTitle" maxlength="60" value="${esc(calEdit.title||'')}"></label>
         <label class="full"><span>메모 (장소·참석자 등)</span><textarea id="calFMemo" maxlength="1000">${esc(calEdit.memo||'')}</textarea></label>
       </div>
@@ -5379,6 +5387,13 @@ function bindUwCal(){
   const scrim = $('calScrim');
   if(scrim) scrim.onclick = e=>{ if(e.target===scrim) calClose(); };
   $('calClose').onclick = calClose; $('calCancel').onclick = calClose;
+  if($('calFAll')) $('calFAll').onclick = ()=>{   // 하루 종일 ↔ 시간 지정
+    const b = $('calFAll'), t = $('calFT'), on = !b.classList.contains('on');
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    t.disabled = on;
+    if(on){ t.dataset.keep = t.value; t.value = ''; }
+    else { t.value = t.dataset.keep || '09:00'; t.focus(); }
+  };
   document.querySelectorAll('[data-cal-who]').forEach(b=> b.onclick = ()=>{ calEdit.who = calEdit.who===b.dataset.calWho ? '' : b.dataset.calWho; document.querySelectorAll('[data-cal-who]').forEach(x=> x.classList.toggle('on', x.dataset.calWho===calEdit.who)); });   // 위원장·사무국·기타(다시 누르면 선택 해제)
   if($('calFD') && $('calFE')){ let d0 = $('calFD').value; $('calFD').onchange = ()=>{ const fe = $('calFE'), nd = $('calFD').value; if(!fe.value || fe.value===d0 || fe.value < nd) fe.value = nd; d0 = nd; }; }   // 시작을 바꾸면 종료도 맞춰 줌(하루짜리면 같이 움직임)
   if($('calDel')) $('calDel').onclick = async ()=>{
@@ -5388,7 +5403,7 @@ function bindUwCal(){
     catch(e){ showToast('지우지 못했어요: ' + (e.message||e)); }
   };
   $('calSave').onclick = async ()=>{
-    const d = $('calFD').value, t = $('calFT').value, title = $('calFTitle').value.trim(), memo = $('calFMemo').value.trim();
+    const d = $('calFD').value, t = $('calFAll') && $('calFAll').classList.contains('on') ? '' : $('calFT').value, title = $('calFTitle').value.trim(), memo = $('calFMemo').value.trim();
     let en = $('calFE').value || d;
     if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ showToast('시작 날짜를 골라 주세요.'); return; }
     if(en < d){ showToast('종료 날짜가 시작보다 빨라요.'); return; }
