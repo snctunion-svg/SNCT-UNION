@@ -5332,7 +5332,7 @@ function pageUwCal(){
     const cls = ['calCell', w===0 ? 'sun' : w===6 ? 'sat' : '', hol ? 'hol' : '', ds===today ? 'today' : '', ds===calSel ? 'sel' : ''].filter(Boolean).join(' ');
     cells.push(`<button type="button" class="${cls}" data-cal-day="${ds}" aria-label="${esc(calDateLabel(ds))} 일정 ${ev.length}개">
       <span class="calNumRow"><span class="calNum">${d}</span>${hol ? `<span class="calHol">${esc(hol)}</span>` : ''}</span>
-      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen${calWhoCls(e)}">* ${esc(calWho(e) + (e.title||''))}${e.t && e.d===ds ? ` <b>${esc(calTm(e, true))}</b>` : ''}</span>`).join('')}
+      ${ev.slice(0,3).map(e=> `<span class="calEv calC-gen${calWhoCls(e)}">* ${esc(calWho(e) + (e.title||''))}${e.t && e.d===ds && !(e.t==='06:00' && e.te==='21:00') ? ` <b>${esc(calTm(e, true))}</b>` : ''}</span>`).join('')}
       ${ev.length > 3 ? `<span class="calMore">+${ev.length-3}개 더</span>` : ''}
       ${ev.length ? `<span class="calDots">${ev.slice(0,4).map(()=> `<i class="calD-gen"></i>`).join('')}</span>` : ''}
     </button>`);
